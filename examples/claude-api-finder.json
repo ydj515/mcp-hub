@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "mcp-hub-api-finder": {
+      "command": "npx",
+      "args": ["-y", "mcp-hub", "stdio", "api-finder"],
+      "env": {
+        "PUBLIC_DATA_API_KEY": "${PUBLIC_DATA_API_KEY}"
+      }
+    }
+  }
+}

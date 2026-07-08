@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "mcp-hub-shortcuts": {
+      "command": "npx",
+      "args": ["-y", "mcp-hub", "stdio", "shortcuts"],
+      "env": {}
+    }
+  }
+}
