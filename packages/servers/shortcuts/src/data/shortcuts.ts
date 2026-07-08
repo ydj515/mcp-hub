@@ -132,23 +132,23 @@ export const intellijShortcuts: Shortcut[] = [
   {
     category: "intellij",
     action: "상위 implement 찾기",
-    mac: "⌘ + u",
-    win: "ctrl + ⇧ + b",
-    keywords: ["find super", "implement", "command", "shift"]
+    mac: "⌘ + U",
+    win: "ctrl + U",
+    keywords: ["find super", "implement", "command"]
   },
   {
     category: "intellij",
     action: "implement 구현된 곳 찾기",
-    mac: "⌘ + option + b",
-    win: "ctrl + b",
+    mac: "⌘ + option + B",
+    win: "ctrl + alt + B",
     keywords: ["go to implementation", "interface", "implement", "command"]
   },
   {
     category: "intellij",
-    action: "사용한는 곳 찾기",
-    mac: "option + fn + f7",
-    win: "",
-    keywords: ["find usage"]
+    action: "사용하는 곳 찾기 (팝업)",
+    mac: "⌘ + option + F7",
+    win: "ctrl + alt + F7",
+    keywords: ["show usages", "find usage", "popup", "command"]
   },
   {
     category: "intellij",
@@ -161,8 +161,8 @@ export const intellijShortcuts: Shortcut[] = [
     category: "intellij",
     action: "project structure 열기",
     mac: "⌘ + ;",
-    win: "-",
-    keywords: ["settings", "command"]
+    win: "ctrl + alt + ⇧ + S",
+    keywords: ["settings", "project structure", "command", "shift"]
   },
   {
     category: "intellij",
@@ -189,85 +189,540 @@ export const intellijShortcuts: Shortcut[] = [
     category: "intellij",
     action: "액션 찾기",
     mac: "⌘ + ⇧ + A",
-    win: "",
+    win: "ctrl + ⇧ + A",
     keywords: ["find action", "command", "search action", "shift"]
   },
   {
     category: "intellij",
     action: "코드 이슈 간 이동",
     mac: "F2 / ⇧ + F2",
-    win: "",
+    win: "F2 / ⇧ + F2",
     keywords: ["navigate", "code issues", "error", "shift"]
   },
   {
     category: "intellij",
     action: "현재 문장 완성",
     mac: "⌘ + ⇧ + Enter",
-    win: "",
+    win: "ctrl + ⇧ + Enter",
     keywords: ["complete sentence", "complete statement", "command", "shift"]
   },
   {
     category: "intellij",
     action: "리팩토링 실행",
     mac: "ctrl + T",
-    win: "",
-    keywords: ["refactor", "refactoring"]
+    win: "ctrl + alt + ⇧ + T",
+    keywords: ["refactor", "refactoring", "shift"]
   },
   {
     category: "intellij",
     action: "선택 영역 확장/축소",
     mac: "option + ↑ / option + ↓",
-    win: "",
-    keywords: ["extend selection", "shrink selection"]
+    win: "ctrl + W / ctrl + ⇧ + W",
+    keywords: ["extend selection", "shrink selection", "shift"]
   },
   {
     category: "intellij",
     action: "라인/블록 주석 추가/제거",
     mac: "⌘ + / 또는 ⌘ + option + /",
-    win: "",
-    keywords: ["comment", "block comment", "line comment", "command"]
+    win: "ctrl + / 또는 ctrl + ⇧ + /",
+    keywords: ["comment", "block comment", "line comment", "command", "shift"]
   },
   {
     category: "intellij",
     action: "선언부로 이동",
     mac: "⌘ + B",
-    win: "",
+    win: "ctrl + B",
     keywords: ["go to declaration", "declaration", "command"]
   },
   {
     category: "intellij",
     action: "사용처 찾기",
     mac: "option + F7",
-    win: "",
+    win: "alt + F7",
     keywords: ["find usages", "usage"]
   },
   {
     category: "intellij",
     action: "에디터 포커스",
-    mac: "⎋ Esc",
-    win: "",
-    keywords: ["focus on editor"]
+    mac: "Esc",
+    win: "Esc",
+    keywords: ["focus on editor", "escape"]
   },
   {
     category: "intellij",
-    action: "add break point",
+    action: "브레이크포인트 추가/제거 (토글)",
     mac: "⌘ + F8",
     win: "ctrl + F8",
-    keywords: ["break point", "debug", "command"]
+    keywords: ["break point", "toggle breakpoint", "debug", "command"]
   },
   {
     category: "intellij",
-    action: "add bookmark",
+    action: "모든 브레이크포인트 보기",
+    mac: "⌘ + ⇧ + F8",
+    win: "ctrl + ⇧ + F8",
+    keywords: ["view breakpoints", "breakpoint list", "debug", "command", "shift"]
+  },
+  {
+    category: "intellij",
+    action: "브레이크포인트 비활성화 (토글)",
+    mac: "option + 클릭 (브레이크포인트)",
+    win: "alt + 클릭 (브레이크포인트)",
+    keywords: ["disable breakpoint", "mute breakpoint", "debug"]
+  },
+  {
+    category: "intellij",
+    action: "북마크 추가/제거 (토글)",
     mac: "F3",
     win: "F11",
-    keywords: ["bookmark"]
+    keywords: ["bookmark", "toggle bookmark", "add bookmark", "remove bookmark"]
   },
   {
     category: "intellij",
-    action: "list bookmark",
+    action: "북마크 목록 보기",
     mac: "⌘ + F3",
     win: "⇧ + F11",
-    keywords: ["bookmark", "list", "command", "shift"]
+    keywords: ["bookmark", "list bookmark", "show bookmarks", "command", "shift"]
+  },
+  {
+    category: "intellij",
+    action: "니모닉 북마크 추가 (숫자/문자 지정)",
+    mac: "option + F3",
+    win: "ctrl + F11",
+    keywords: ["mnemonic bookmark", "numbered bookmark", "labeled bookmark"]
+  },
+  {
+    category: "intellij",
+    action: "숫자 북마크로 이동 (0~9)",
+    mac: "ctrl + 0~9",
+    win: "ctrl + 0~9",
+    keywords: ["go to bookmark", "numbered bookmark", "navigate bookmark"]
+  },
+  // --- 디버깅 ---
+  {
+    category: "intellij",
+    action: "디버그 실행",
+    mac: "ctrl + D",
+    win: "⇧ + F9",
+    keywords: ["debug", "run debug", "shift"]
+  },
+  {
+    category: "intellij",
+    action: "Step Over (다음 줄)",
+    mac: "F8",
+    win: "F8",
+    keywords: ["step over", "debug", "next line"]
+  },
+  {
+    category: "intellij",
+    action: "Step Into (함수 내부로)",
+    mac: "F7",
+    win: "F7",
+    keywords: ["step into", "debug", "enter function"]
+  },
+  {
+    category: "intellij",
+    action: "Step Out (함수 밖으로)",
+    mac: "⇧ + F8",
+    win: "⇧ + F8",
+    keywords: ["step out", "debug", "exit function", "shift"]
+  },
+  {
+    category: "intellij",
+    action: "Resume (계속 실행)",
+    mac: "⌘ + option + R",
+    win: "F9",
+    keywords: ["resume", "continue", "debug", "command"]
+  },
+  {
+    category: "intellij",
+    action: "Evaluate Expression (디버그 중 식 평가)",
+    mac: "option + F8",
+    win: "alt + F8",
+    keywords: ["evaluate", "expression", "debug", "inspect"]
+  },
+  {
+    category: "intellij",
+    action: "실행 중지",
+    mac: "⌘ + F2",
+    win: "ctrl + F2",
+    keywords: ["stop", "terminate", "kill", "command"]
+  },
+  {
+    category: "intellij",
+    action: "Run Configuration 선택 실행",
+    mac: "ctrl + option + R",
+    win: "alt + ⇧ + F10",
+    keywords: ["run config", "configuration", "shift"]
+  },
+  {
+    category: "intellij",
+    action: "Debug Configuration 선택 실행",
+    mac: "ctrl + option + D",
+    win: "alt + ⇧ + F9",
+    keywords: ["debug config", "configuration", "shift"]
+  },
+  // --- 리팩토링 ---
+  {
+    category: "intellij",
+    action: "이름 변경 (Rename)",
+    mac: "⇧ + F6",
+    win: "⇧ + F6",
+    keywords: ["rename", "refactor", "이름 변경", "shift"]
+  },
+  {
+    category: "intellij",
+    action: "메서드 추출 (Extract Method)",
+    mac: "⌘ + option + M",
+    win: "ctrl + alt + M",
+    keywords: ["extract method", "refactor", "command"]
+  },
+  {
+    category: "intellij",
+    action: "변수 추출 (Extract Variable)",
+    mac: "⌘ + option + V",
+    win: "ctrl + alt + V",
+    keywords: ["extract variable", "refactor", "command"]
+  },
+  {
+    category: "intellij",
+    action: "상수 추출 (Extract Constant)",
+    mac: "⌘ + option + C",
+    win: "ctrl + alt + C",
+    keywords: ["extract constant", "refactor", "command"]
+  },
+  {
+    category: "intellij",
+    action: "필드 추출 (Extract Field)",
+    mac: "⌘ + option + F",
+    win: "ctrl + alt + F",
+    keywords: ["extract field", "refactor", "command"]
+  },
+  {
+    category: "intellij",
+    action: "파라미터 추출 (Extract Parameter)",
+    mac: "⌘ + option + P",
+    win: "ctrl + alt + P",
+    keywords: ["extract parameter", "refactor", "command"]
+  },
+  {
+    category: "intellij",
+    action: "인라인 (Inline)",
+    mac: "⌘ + option + N",
+    win: "ctrl + alt + N",
+    keywords: ["inline", "refactor", "command"]
+  },
+  {
+    category: "intellij",
+    action: "클래스/파일 이동 (Move)",
+    mac: "F6",
+    win: "F6",
+    keywords: ["move class", "move file", "refactor"]
+  },
+  {
+    category: "intellij",
+    action: "시그니처 변경 (Change Signature)",
+    mac: "⌘ + F6",
+    win: "ctrl + F6",
+    keywords: ["change signature", "refactor", "parameter", "command"]
+  },
+  {
+    category: "intellij",
+    action: "Safe Delete",
+    mac: "⌘ + delete",
+    win: "alt + delete",
+    keywords: ["safe delete", "refactor", "command"]
+  },
+  // --- 네비게이션 ---
+  {
+    category: "intellij",
+    action: "클래스 검색 (Go to Class)",
+    mac: "⌘ + O",
+    win: "ctrl + N",
+    keywords: ["go to class", "find class", "command"]
+  },
+  {
+    category: "intellij",
+    action: "심볼 검색 (Go to Symbol)",
+    mac: "⌘ + option + O",
+    win: "ctrl + alt + ⇧ + N",
+    keywords: ["go to symbol", "find symbol", "command", "shift"]
+  },
+  {
+    category: "intellij",
+    action: "타입 계층 구조 (Type Hierarchy)",
+    mac: "ctrl + H",
+    win: "ctrl + H",
+    keywords: ["type hierarchy", "class hierarchy", "inheritance"]
+  },
+  {
+    category: "intellij",
+    action: "호출 계층 구조 (Call Hierarchy)",
+    mac: "ctrl + option + H",
+    win: "ctrl + alt + H",
+    keywords: ["call hierarchy", "caller", "callee"]
+  },
+  {
+    category: "intellij",
+    action: "파일 구조 보기 (File Structure)",
+    mac: "⌘ + F12",
+    win: "ctrl + F12",
+    keywords: ["file structure", "outline", "method list", "command"]
+  },
+  {
+    category: "intellij",
+    action: "테스트로 이동 / 테스트에서 원본으로",
+    mac: "⌘ + ⇧ + T",
+    win: "ctrl + ⇧ + T",
+    keywords: ["go to test", "test", "create test", "command", "shift"]
+  },
+  {
+    category: "intellij",
+    action: "다음 메서드로 이동",
+    mac: "ctrl + ⇧ + ↓",
+    win: "alt + ↓",
+    keywords: ["next method", "navigate method", "shift"]
+  },
+  {
+    category: "intellij",
+    action: "이전 메서드로 이동",
+    mac: "ctrl + ⇧ + ↑",
+    win: "alt + ↑",
+    keywords: ["previous method", "navigate method", "shift"]
+  },
+  {
+    category: "intellij",
+    action: "최근 변경 파일 목록",
+    mac: "⌘ + ⇧ + E",
+    win: "ctrl + ⇧ + E",
+    keywords: ["recent changes", "recently edited", "command", "shift"]
+  },
+  {
+    category: "intellij",
+    action: "파라미터 정보 보기",
+    mac: "⌘ + P",
+    win: "ctrl + P",
+    keywords: ["parameter info", "hint", "command"]
+  },
+  {
+    category: "intellij",
+    action: "Quick Documentation (빠른 문서 보기)",
+    mac: "F1",
+    win: "ctrl + Q",
+    keywords: ["documentation", "javadoc", "quick doc"]
+  },
+  {
+    category: "intellij",
+    action: "Quick Definition (빠른 정의 보기)",
+    mac: "option + space",
+    win: "ctrl + ⇧ + I",
+    keywords: ["quick definition", "peek definition", "shift"]
+  },
+  // --- 편집 ---
+  {
+    category: "intellij",
+    action: "코드 감싸기 (Surround With)",
+    mac: "⌘ + option + T",
+    win: "ctrl + alt + T",
+    keywords: ["surround with", "wrap", "try catch", "if", "command"]
+  },
+  {
+    category: "intellij",
+    action: "Live Template 삽입",
+    mac: "⌘ + J",
+    win: "ctrl + J",
+    keywords: ["live template", "snippet", "code template", "command"]
+  },
+  {
+    category: "intellij",
+    action: "코드 접기 (Fold)",
+    mac: "⌘ + -",
+    win: "ctrl + -",
+    keywords: ["fold", "collapse", "hide code", "command"]
+  },
+  {
+    category: "intellij",
+    action: "코드 펼치기 (Unfold)",
+    mac: "⌘ + +",
+    win: "ctrl + +",
+    keywords: ["unfold", "expand", "show code", "command"]
+  },
+  {
+    category: "intellij",
+    action: "전체 코드 접기",
+    mac: "⌘ + ⇧ + -",
+    win: "ctrl + ⇧ + -",
+    keywords: ["fold all", "collapse all", "command", "shift"]
+  },
+  {
+    category: "intellij",
+    action: "전체 코드 펼치기",
+    mac: "⌘ + ⇧ + +",
+    win: "ctrl + ⇧ + +",
+    keywords: ["unfold all", "expand all", "command", "shift"]
+  },
+  {
+    category: "intellij",
+    action: "줄 합치기 (Join Lines)",
+    mac: "ctrl + ⇧ + J",
+    win: "ctrl + ⇧ + J",
+    keywords: ["join lines", "merge lines", "shift"]
+  },
+  {
+    category: "intellij",
+    action: "줄 위/아래로 이동",
+    mac: "option + ⇧ + ↑ / ↓",
+    win: "alt + ⇧ + ↑ / ↓",
+    keywords: ["move line", "move statement", "shift"]
+  },
+  {
+    category: "intellij",
+    action: "구문 위/아래로 이동 (Move Statement)",
+    mac: "⌘ + ⇧ + ↑ / ↓",
+    win: "ctrl + ⇧ + ↑ / ↓",
+    keywords: ["move statement", "move block", "command", "shift"]
+  },
+  {
+    category: "intellij",
+    action: "Column Selection Mode (세로 선택)",
+    mac: "⌘ + ⇧ + 8",
+    win: "alt + ⇧ + insert",
+    keywords: ["column select", "vertical select", "block select", "command", "shift"]
+  },
+  {
+    category: "intellij",
+    action: "멀티 커서 추가",
+    mac: "option + option(hold) + ↑ / ↓",
+    win: "ctrl + ctrl(hold) + ↑ / ↓",
+    keywords: ["multi cursor", "add caret", "multiple cursor"]
+  },
+  {
+    category: "intellij",
+    action: "대소문자 변환 (Toggle Case)",
+    mac: "⌘ + ⇧ + U",
+    win: "ctrl + ⇧ + U",
+    keywords: ["toggle case", "uppercase", "lowercase", "command", "shift"]
+  },
+  {
+    category: "intellij",
+    action: "자동 import 최적화",
+    mac: "ctrl + option + O",
+    win: "ctrl + alt + O",
+    keywords: ["optimize imports", "remove unused imports", "import"]
+  },
+  // --- Git ---
+  {
+    category: "intellij",
+    action: "Git Commit",
+    mac: "⌘ + K",
+    win: "ctrl + K",
+    keywords: ["git", "commit", "command"]
+  },
+  {
+    category: "intellij",
+    action: "Git Push",
+    mac: "⌘ + ⇧ + K",
+    win: "ctrl + ⇧ + K",
+    keywords: ["git", "push", "command", "shift"]
+  },
+  {
+    category: "intellij",
+    action: "Git Pull / Update",
+    mac: "⌘ + T",
+    win: "ctrl + T",
+    keywords: ["git", "pull", "update", "fetch", "command"]
+  },
+  {
+    category: "intellij",
+    action: "Git Log 보기",
+    mac: "⌘ + 9",
+    win: "alt + 9",
+    keywords: ["git", "log", "history", "version control", "command"]
+  },
+  {
+    category: "intellij",
+    action: "Git Annotate (Blame)",
+    mac: "우클릭 → Git → Annotate",
+    win: "우클릭 → Git → Annotate",
+    keywords: ["git", "blame", "annotate", "author"]
+  },
+  {
+    category: "intellij",
+    action: "Diff (변경 사항 비교)",
+    mac: "⌘ + D (Version Control에서)",
+    win: "ctrl + D (Version Control에서)",
+    keywords: ["diff", "compare", "변경 비교", "command"]
+  },
+  {
+    category: "intellij",
+    action: "변경 롤백 (Rollback)",
+    mac: "⌘ + option + Z",
+    win: "ctrl + alt + Z",
+    keywords: ["rollback", "revert", "git", "undo change", "command"]
+  },
+  // --- 빌드/도구 창 ---
+  {
+    category: "intellij",
+    action: "프로젝트 빌드",
+    mac: "⌘ + F9",
+    win: "ctrl + F9",
+    keywords: ["build", "compile", "make", "command"]
+  },
+  {
+    category: "intellij",
+    action: "도구 창 숨기기/보이기",
+    mac: "⌘ + ⇧ + F12",
+    win: "ctrl + ⇧ + F12",
+    keywords: ["hide tool windows", "maximize editor", "command", "shift"]
+  },
+  {
+    category: "intellij",
+    action: "전체 화면 전환",
+    mac: "ctrl + ⌘ + F",
+    win: "F11",
+    keywords: ["full screen", "전체 화면"]
+  },
+  // --- 같은 단어 선택 / 찾기 바꾸기 ---
+  {
+    category: "intellij",
+    action: "같은 단어 순차 선택 (Add Selection for Next Occurrence)",
+    mac: "ctrl + G",
+    win: "alt + J",
+    keywords: ["select next occurrence", "같은 단어", "순차 선택", "multi select"]
+  },
+  {
+    category: "intellij",
+    action: "모든 같은 단어 일괄 선택 (Select All Occurrences)",
+    mac: "ctrl + ⌘ + G",
+    win: "ctrl + alt + ⇧ + J",
+    keywords: ["select all occurrences", "같은 단어 전체", "일괄 선택", "shift"]
+  },
+  {
+    category: "intellij",
+    action: "파일 내 찾기",
+    mac: "⌘ + F",
+    win: "ctrl + F",
+    keywords: ["find", "search", "찾기", "command"]
+  },
+  {
+    category: "intellij",
+    action: "파일 내 바꾸기 (Replace)",
+    mac: "⌘ + R",
+    win: "ctrl + R",
+    keywords: ["replace", "find and replace", "바꾸기", "command"]
+  },
+  {
+    category: "intellij",
+    action: "프로젝트 전체에서 찾기 (Find in Path)",
+    mac: "⌘ + ⇧ + F",
+    win: "ctrl + ⇧ + F",
+    keywords: ["find in path", "global search", "프로젝트 검색", "command", "shift"]
+  },
+  {
+    category: "intellij",
+    action: "프로젝트 전체에서 바꾸기 (Replace in Path)",
+    mac: "⌘ + ⇧ + R",
+    win: "ctrl + ⇧ + R",
+    keywords: ["replace in path", "global replace", "프로젝트 바꾸기", "command", "shift"]
   }
 ];
 
@@ -651,6 +1106,390 @@ export const vscodeShortcuts: Shortcut[] = [
     mac: "ctrl + ⇧ + -",
     win: "alt + →",
     keywords: ["go forward", "cursor history", "shift"]
+  },
+  // --- 디버깅 ---
+  {
+    category: "vscode",
+    action: "디버그 시작 / 계속",
+    mac: "F5",
+    win: "F5",
+    keywords: ["debug", "start debug", "continue"]
+  },
+  {
+    category: "vscode",
+    action: "디버그 중지",
+    mac: "⇧ + F5",
+    win: "⇧ + F5",
+    keywords: ["stop debug", "terminate", "shift"]
+  },
+  {
+    category: "vscode",
+    action: "Step Over (다음 줄)",
+    mac: "F10",
+    win: "F10",
+    keywords: ["step over", "debug", "next line"]
+  },
+  {
+    category: "vscode",
+    action: "Step Into (함수 내부로)",
+    mac: "F11",
+    win: "F11",
+    keywords: ["step into", "debug", "enter function"]
+  },
+  {
+    category: "vscode",
+    action: "Step Out (함수 밖으로)",
+    mac: "⇧ + F11",
+    win: "⇧ + F11",
+    keywords: ["step out", "debug", "exit function", "shift"]
+  },
+  {
+    category: "vscode",
+    action: "브레이크포인트 토글",
+    mac: "F9",
+    win: "F9",
+    keywords: ["breakpoint", "toggle breakpoint", "debug"]
+  },
+  {
+    category: "vscode",
+    action: "디버그 콘솔 열기",
+    mac: "⌘ + ⇧ + Y",
+    win: "ctrl + ⇧ + Y",
+    keywords: ["debug console", "command", "shift"]
+  },
+  // --- 편집 ---
+  {
+    category: "vscode",
+    action: "블록 주석 토글",
+    mac: "⇧ + option + A",
+    win: "⇧ + alt + A",
+    keywords: ["block comment", "toggle block comment", "shift"]
+  },
+  {
+    category: "vscode",
+    action: "줄 삭제",
+    mac: "⌘ + ⇧ + K",
+    win: "ctrl + ⇧ + K",
+    keywords: ["delete line", "remove line", "command", "shift"]
+  },
+  {
+    category: "vscode",
+    action: "아래에 빈 줄 삽입",
+    mac: "⌘ + enter",
+    win: "ctrl + enter",
+    keywords: ["insert line below", "new line", "command"]
+  },
+  {
+    category: "vscode",
+    action: "위에 빈 줄 삽입",
+    mac: "⌘ + ⇧ + enter",
+    win: "ctrl + ⇧ + enter",
+    keywords: ["insert line above", "new line", "command", "shift"]
+  },
+  {
+    category: "vscode",
+    action: "코드 접기 (Fold)",
+    mac: "⌘ + option + [",
+    win: "ctrl + ⇧ + [",
+    keywords: ["fold", "collapse", "hide code", "command", "shift"]
+  },
+  {
+    category: "vscode",
+    action: "코드 펼치기 (Unfold)",
+    mac: "⌘ + option + ]",
+    win: "ctrl + ⇧ + ]",
+    keywords: ["unfold", "expand", "show code", "command", "shift"]
+  },
+  {
+    category: "vscode",
+    action: "전체 코드 접기",
+    mac: "⌘ + K → ⌘ + 0",
+    win: "ctrl + K → ctrl + 0",
+    keywords: ["fold all", "collapse all", "command"]
+  },
+  {
+    category: "vscode",
+    action: "전체 코드 펼치기",
+    mac: "⌘ + K → ⌘ + J",
+    win: "ctrl + K → ctrl + J",
+    keywords: ["unfold all", "expand all", "command"]
+  },
+  {
+    category: "vscode",
+    action: "들여쓰기 증가",
+    mac: "⌘ + ]",
+    win: "ctrl + ]",
+    keywords: ["indent", "increase indent", "tab", "command"]
+  },
+  {
+    category: "vscode",
+    action: "들여쓰기 감소",
+    mac: "⌘ + [",
+    win: "ctrl + [",
+    keywords: ["outdent", "decrease indent", "untab", "command"]
+  },
+  {
+    category: "vscode",
+    action: "Emmet 약어 확장",
+    mac: "tab",
+    win: "tab",
+    keywords: ["emmet", "abbreviation", "expand", "html"]
+  },
+  {
+    category: "vscode",
+    action: "매칭 괄호로 이동",
+    mac: "⌘ + ⇧ + \\",
+    win: "ctrl + ⇧ + \\",
+    keywords: ["go to bracket", "matching bracket", "command", "shift"]
+  },
+  {
+    category: "vscode",
+    action: "정의로 이동 (Go to Definition)",
+    mac: "F12",
+    win: "F12",
+    keywords: ["go to definition", "declaration"]
+  },
+  {
+    category: "vscode",
+    action: "정의 미리보기 (Peek Definition)",
+    mac: "option + F12",
+    win: "alt + F12",
+    keywords: ["peek definition", "preview definition"]
+  },
+  {
+    category: "vscode",
+    action: "참조 찾기 (Find All References)",
+    mac: "⇧ + F12",
+    win: "⇧ + F12",
+    keywords: ["find references", "find usage", "shift"]
+  },
+  {
+    category: "vscode",
+    action: "심볼 이름 변경 (Rename Symbol)",
+    mac: "F2",
+    win: "F2",
+    keywords: ["rename", "rename symbol", "refactor"]
+  },
+  {
+    category: "vscode",
+    action: "같은 단어 전체 선택",
+    mac: "⌘ + ⇧ + L",
+    win: "ctrl + ⇧ + L",
+    keywords: ["select all occurrences", "같은 단어", "command", "shift"]
+  },
+  {
+    category: "vscode",
+    action: "현재 줄 위/아래로 복사",
+    mac: "⇧ + option + ↓ / ↑",
+    win: "⇧ + alt + ↓ / ↑",
+    keywords: ["copy line", "duplicate line", "shift"]
+  },
+  {
+    category: "vscode",
+    action: "줄 정렬 (오름차순)",
+    mac: "⌘ + ⇧ + P → 'Sort Lines Ascending'",
+    win: "ctrl + ⇧ + P → 'Sort Lines Ascending'",
+    keywords: ["sort lines", "정렬", "command", "shift"]
+  },
+  {
+    category: "vscode",
+    action: "후행 공백 제거",
+    mac: "⌘ + K → ⌘ + X",
+    win: "ctrl + K → ctrl + X",
+    keywords: ["trim whitespace", "trailing spaces", "command"]
+  },
+  {
+    category: "vscode",
+    action: "대소문자 변환 (대문자)",
+    mac: "⌘ + ⇧ + P → 'Transform to Uppercase'",
+    win: "ctrl + ⇧ + P → 'Transform to Uppercase'",
+    keywords: ["uppercase", "대문자", "transform", "command", "shift"]
+  },
+  {
+    category: "vscode",
+    action: "대소문자 변환 (소문자)",
+    mac: "⌘ + ⇧ + P → 'Transform to Lowercase'",
+    win: "ctrl + ⇧ + P → 'Transform to Lowercase'",
+    keywords: ["lowercase", "소문자", "transform", "command", "shift"]
+  },
+  // --- 멀티 커서 ---
+  {
+    category: "vscode",
+    action: "멀티 커서 추가 (임의 위치)",
+    mac: "option + 클릭",
+    win: "alt + 클릭",
+    keywords: ["multi cursor", "add cursor", "multiple cursor"]
+  },
+  {
+    category: "vscode",
+    action: "멀티 커서 (위/아래 추가)",
+    mac: "⌘ + option + ↑ / ↓",
+    win: "ctrl + alt + ↑ / ↓",
+    keywords: ["multi cursor", "add cursor above below", "command"]
+  },
+  // --- 네비게이션 ---
+  {
+    category: "vscode",
+    action: "워크스페이스 심볼 검색",
+    mac: "⌘ + T",
+    win: "ctrl + T",
+    keywords: ["go to symbol workspace", "find symbol", "command"]
+  },
+  {
+    category: "vscode",
+    action: "파일 내 심볼 검색",
+    mac: "⌘ + ⇧ + O",
+    win: "ctrl + ⇧ + O",
+    keywords: ["go to symbol file", "outline", "command", "shift"]
+  },
+  {
+    category: "vscode",
+    action: "라인으로 이동",
+    mac: "ctrl + G",
+    win: "ctrl + G",
+    keywords: ["go to line", "라인 이동"]
+  },
+  {
+    category: "vscode",
+    action: "에디터 그룹 분할 (좌우)",
+    mac: "⌘ + \\",
+    win: "ctrl + \\",
+    keywords: ["split editor", "에디터 분할", "command"]
+  },
+  {
+    category: "vscode",
+    action: "에디터 그룹 간 포커스 이동",
+    mac: "⌘ + 1 / 2 / 3",
+    win: "ctrl + 1 / 2 / 3",
+    keywords: ["focus editor group", "switch editor", "command"]
+  },
+  {
+    category: "vscode",
+    action: "탭 닫기",
+    mac: "⌘ + W",
+    win: "ctrl + W",
+    keywords: ["close tab", "close editor", "command"]
+  },
+  {
+    category: "vscode",
+    action: "닫은 탭 다시 열기",
+    mac: "⌘ + ⇧ + T",
+    win: "ctrl + ⇧ + T",
+    keywords: ["reopen tab", "restore tab", "command", "shift"]
+  },
+  {
+    category: "vscode",
+    action: "최근 열었던 파일 목록",
+    mac: "ctrl + tab",
+    win: "ctrl + tab",
+    keywords: ["recent files", "switch tab", "최근 파일"]
+  },
+  {
+    category: "vscode",
+    action: "Breadcrumbs 포커스",
+    mac: "⌘ + ⇧ + .",
+    win: "ctrl + ⇧ + .",
+    keywords: ["breadcrumbs", "navigation", "command", "shift"]
+  },
+  {
+    category: "vscode",
+    action: "에러/경고 간 이동",
+    mac: "F8 / ⇧ + F8",
+    win: "F8 / ⇧ + F8",
+    keywords: ["next error", "next warning", "navigate problems", "shift"]
+  },
+  {
+    category: "vscode",
+    action: "문제(Problems) 패널 열기",
+    mac: "⌘ + ⇧ + M",
+    win: "ctrl + ⇧ + M",
+    keywords: ["problems panel", "errors", "warnings", "command", "shift"]
+  },
+  {
+    category: "vscode",
+    action: "출력(Output) 패널 열기",
+    mac: "⌘ + ⇧ + U",
+    win: "ctrl + ⇧ + U",
+    keywords: ["output panel", "command", "shift"]
+  },
+  // --- Git ---
+  {
+    category: "vscode",
+    action: "소스 제어 패널 열기",
+    mac: "ctrl + ⇧ + G",
+    win: "ctrl + ⇧ + G",
+    keywords: ["source control", "git", "shift"]
+  },
+  {
+    category: "vscode",
+    action: "인라인 변경 사항 이동 (다음/이전)",
+    mac: "option + F5 / option + ⇧ + F5",
+    win: "alt + F5 / alt + ⇧ + F5",
+    keywords: ["inline diff", "next change", "git", "shift"]
+  },
+  // --- 기타 ---
+  {
+    category: "vscode",
+    action: "환경 설정 열기",
+    mac: "⌘ + ,",
+    win: "ctrl + ,",
+    keywords: ["settings", "preferences", "설정", "command"]
+  },
+  {
+    category: "vscode",
+    action: "키보드 단축키 설정",
+    mac: "⌘ + K → ⌘ + S",
+    win: "ctrl + K → ctrl + S",
+    keywords: ["keyboard shortcuts", "키 바인딩", "command"]
+  },
+  {
+    category: "vscode",
+    action: "확장 기능 열기",
+    mac: "⌘ + ⇧ + X",
+    win: "ctrl + ⇧ + X",
+    keywords: ["extensions", "marketplace", "플러그인", "command", "shift"]
+  },
+  {
+    category: "vscode",
+    action: "Zen Mode (집중 모드)",
+    mac: "⌘ + K → Z",
+    win: "ctrl + K → Z",
+    keywords: ["zen mode", "distraction free", "집중 모드", "command"]
+  },
+  {
+    category: "vscode",
+    action: "전체 화면 전환",
+    mac: "ctrl + ⌘ + F",
+    win: "F11",
+    keywords: ["full screen", "전체 화면"]
+  },
+  {
+    category: "vscode",
+    action: "마크다운 미리보기 열기",
+    mac: "⌘ + ⇧ + V",
+    win: "ctrl + ⇧ + V",
+    keywords: ["markdown preview", "미리보기", "command", "shift"]
+  },
+  {
+    category: "vscode",
+    action: "사이드바 포커스 이동 (탐색기/검색/Git/디버그/확장)",
+    mac: "⌘ + ⇧ + E / ⌘ + ⇧ + F / ctrl + ⇧ + G / ⌘ + ⇧ + D / ⌘ + ⇧ + X",
+    win: "ctrl + ⇧ + E / ctrl + ⇧ + F / ctrl + ⇧ + G / ctrl + ⇧ + D / ctrl + ⇧ + X",
+    keywords: ["sidebar", "explorer", "search", "git", "debug", "extensions", "command", "shift"]
+  },
+  {
+    category: "vscode",
+    action: "패널 표시/숨기기",
+    mac: "⌘ + J",
+    win: "ctrl + J",
+    keywords: ["toggle panel", "panel", "terminal", "command"]
+  },
+  {
+    category: "vscode",
+    action: "단어 줄바꿈 토글 (Word Wrap)",
+    mac: "option + Z",
+    win: "alt + Z",
+    keywords: ["word wrap", "줄바꿈", "toggle wrap"]
   }
 ];
 
