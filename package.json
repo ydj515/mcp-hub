@@ -4,12 +4,12 @@
   "type": "module",
   "workspaces": [
     "packages/core",
-    "packages/cli",
-    "packages/servers/*"
+    "packages/servers/*",
+    "packages/cli"
   ],
   "scripts": {
     "build": "npm run build --workspaces --if-present",
-    "typecheck": "tsc -b packages/core packages/cli packages/servers/shortcuts packages/servers/api-finder packages/servers/postgres",
+    "typecheck": "tsc -b packages/core packages/servers/shortcuts packages/servers/api-finder packages/cli",
     "test": "vitest run",
     "test:watch": "vitest"
   },
