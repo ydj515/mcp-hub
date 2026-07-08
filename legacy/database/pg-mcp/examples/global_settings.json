@@ -1,0 +1,18 @@
+{
+  "mcpServers": {
+    "pg-mcp": {
+      "command": "uv",
+      "args": [
+        "run",
+        "--directory",
+        "/Users/dongjin/tools/mcp-server/database/pg-mcp",
+        "python",
+        "-m",
+        "pg_mcp.server"
+      ],
+      "env": {
+        "DATABASE_URL": "postgresql://mcp_readonly:your_password@localhost:5432/your_default_db"
+      }
+    }
+  }
+}
