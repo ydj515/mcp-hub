@@ -1,17 +1,17 @@
 {
-  "name": "mcp-hub",
+  "name": "@mcp-hub/server-api-finder",
   "version": "0.1.0",
   "type": "module",
   "private": true,
-  "bin": {
-    "mcp-hub": "./dist/index.js"
+  "exports": {
+    ".": "./dist/index.js"
   },
   "scripts": {
     "build": "tsc -p tsconfig.json"
   },
   "dependencies": {
     "@mcp-hub/core": "0.1.0",
-    "@mcp-hub/server-api-finder": "0.1.0",
-    "@mcp-hub/server-shortcuts": "0.1.0"
+    "axios": "^1.10.0",
+    "zod": "^3.23.8"
   }
 }
