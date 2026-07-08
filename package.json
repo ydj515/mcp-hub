@@ -1,0 +1,22 @@
+{
+  "name": "mcp-hub-monorepo",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "packages/core",
+    "packages/cli",
+    "packages/servers/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces --if-present",
+    "typecheck": "tsc -b packages/core packages/cli packages/servers/shortcuts packages/servers/api-finder packages/servers/postgres",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "@types/node": "^20.12.12",
+    "tsx": "^4.9.3",
+    "typescript": "^5.4.5",
+    "vitest": "^1.6.0"
+  }
+}
