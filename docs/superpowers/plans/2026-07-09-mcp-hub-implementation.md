@@ -536,7 +536,7 @@ Create `packages/servers/shortcuts/package.json`:
     "build": "tsc -p tsconfig.json"
   },
   "dependencies": {
-    "@mcp-hub/core": "workspace:*",
+    "@mcp-hub/core": "0.1.0",
     "zod": "^3.23.8"
   }
 }
@@ -777,8 +777,8 @@ Create `packages/cli/package.json`:
     "build": "tsc -p tsconfig.json"
   },
   "dependencies": {
-    "@mcp-hub/core": "workspace:*",
-    "@mcp-hub/server-shortcuts": "workspace:*"
+    "@mcp-hub/core": "0.1.0",
+    "@mcp-hub/server-shortcuts": "0.1.0"
   }
 }
 ```
@@ -1787,7 +1787,7 @@ Create `packages/servers/api-finder/package.json`:
     "build": "tsc -p tsconfig.json"
   },
   "dependencies": {
-    "@mcp-hub/core": "workspace:*",
+    "@mcp-hub/core": "0.1.0",
     "axios": "^1.10.0",
     "zod": "^3.23.8"
   }
@@ -1990,9 +1990,9 @@ Modify `packages/cli/package.json` dependencies:
 ```json
 {
   "dependencies": {
-    "@mcp-hub/core": "workspace:*",
-    "@mcp-hub/server-api-finder": "workspace:*",
-    "@mcp-hub/server-shortcuts": "workspace:*"
+    "@mcp-hub/core": "0.1.0",
+    "@mcp-hub/server-api-finder": "0.1.0",
+    "@mcp-hub/server-shortcuts": "0.1.0"
   }
 }
 ```
@@ -2152,7 +2152,7 @@ Create `packages/servers/postgres/package.json`:
     "build": "tsc -p tsconfig.json"
   },
   "dependencies": {
-    "@mcp-hub/core": "workspace:*",
+    "@mcp-hub/core": "0.1.0",
     "pg": "^8.12.0",
     "zod": "^3.23.8"
   },
@@ -2484,10 +2484,10 @@ Modify `packages/cli/package.json` dependencies:
 ```json
 {
   "dependencies": {
-    "@mcp-hub/core": "workspace:*",
-    "@mcp-hub/server-api-finder": "workspace:*",
-    "@mcp-hub/server-postgres": "workspace:*",
-    "@mcp-hub/server-shortcuts": "workspace:*"
+    "@mcp-hub/core": "0.1.0",
+    "@mcp-hub/server-api-finder": "0.1.0",
+    "@mcp-hub/server-postgres": "0.1.0",
+    "@mcp-hub/server-shortcuts": "0.1.0"
   }
 }
 ```
