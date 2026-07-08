@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { runInitCommand } from "./commands/init.js";
 import { runListCommand } from "./commands/list.js";
 import { runServeCommand } from "./commands/serve.js";
 import { runStdioCommand } from "./commands/stdio.js";
@@ -8,7 +9,12 @@ const [, , command, ...args] = process.argv;
 
 const main = async () => {
   if (!command || command === "help" || command === "--help" || command === "-h") {
-    console.error("Usage: mcp-hub <list|stdio|serve> [args]");
+    console.error("Usage: mcp-hub <init|list|stdio|serve> [args]");
+    return;
+  }
+
+  if (command === "init") {
+    runInitCommand(serverRegistry, args);
     return;
   }
 

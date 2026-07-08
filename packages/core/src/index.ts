@@ -1,3 +1,4 @@
+export * from "./config/init.js";
 export * from "./create-server.js";
 export * from "./http/auth.js";
 export * from "./http/streamable-http-app.js";
