@@ -1,0 +1,16 @@
+{
+  "name": "mcp-hub",
+  "version": "0.1.0",
+  "type": "module",
+  "private": true,
+  "bin": {
+    "mcp-hub": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@mcp-hub/core": "0.1.0",
+    "@mcp-hub/server-shortcuts": "0.1.0"
+  }
+}
