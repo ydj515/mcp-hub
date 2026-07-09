@@ -1,0 +1,23 @@
+[mcp_servers.mcp_hub_api_finder_remote]
+url = "https://mcp.example.com/mcp/api-finder"
+bearer_token_env_var = "MCP_HUB_TOKEN"
+startup_timeout_sec = 20
+tool_timeout_sec = 60
+
+[mcp_servers.mcp_hub_shortcuts_remote]
+url = "https://mcp.example.com/mcp/shortcuts"
+bearer_token_env_var = "MCP_HUB_TOKEN"
+startup_timeout_sec = 20
+tool_timeout_sec = 60
+
+[mcp_servers.mcp_hub_mysql_remote]
+url = "https://mcp.example.com/mcp/mysql"
+bearer_token_env_var = "MCP_HUB_TOKEN"
+startup_timeout_sec = 20
+tool_timeout_sec = 60
+
+[mcp_servers.mcp_hub_postgres_remote]
+url = "https://mcp.example.com/mcp/postgres"
+bearer_token_env_var = "MCP_HUB_TOKEN"
+startup_timeout_sec = 20
+tool_timeout_sec = 60

@@ -80,6 +80,17 @@ node packages/cli/dist/index.js serve shortcuts --port 3333
 node packages/cli/dist/index.js serve all --port 3333
 ```
 
+remote MCP server로 노출할 때는 토큰을 환경 변수로 두고 `--auth-token-env`를 지정합니다.
+
+```bash
+export MCP_HUB_TOKEN="$(openssl rand -base64 32)"
+
+node packages/cli/dist/index.js serve all \
+  --host 0.0.0.0 \
+  --port 3333 \
+  --auth-token-env MCP_HUB_TOKEN
+```
+
 `serve all`은 tool을 하나로 병합하지 않고, 서버별 HTTP endpoint를 제공합니다.
 
 ```text
@@ -95,6 +106,8 @@ http://localhost:3333/mcp/postgres
 http://localhost:3333/mcp
 http://localhost:3333/mcp/shortcuts
 ```
+
+remote token 방식의 실행 절차, curl 확인, 클라이언트별 예시는 [Remote Streamable HTTP 실행](remote-http.md)을 확인하세요.
 
 ## init preview
 

@@ -1,0 +1,28 @@
+{
+  "mcpServers": {
+    "mcp-hub-api-finder-remote": {
+      "url": "https://mcp.example.com/mcp/api-finder",
+      "headers": {
+        "Authorization": "Bearer ${MCP_HUB_TOKEN}"
+      }
+    },
+    "mcp-hub-shortcuts-remote": {
+      "url": "https://mcp.example.com/mcp/shortcuts",
+      "headers": {
+        "Authorization": "Bearer ${MCP_HUB_TOKEN}"
+      }
+    },
+    "mcp-hub-mysql-remote": {
+      "url": "https://mcp.example.com/mcp/mysql",
+      "headers": {
+        "Authorization": "Bearer ${MCP_HUB_TOKEN}"
+      }
+    },
+    "mcp-hub-postgres-remote": {
+      "url": "https://mcp.example.com/mcp/postgres",
+      "headers": {
+        "Authorization": "Bearer ${MCP_HUB_TOKEN}"
+      }
+    }
+  }
+}
