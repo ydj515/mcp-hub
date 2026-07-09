@@ -11,6 +11,7 @@ export const postgresServer: ServerDefinition = {
   registerTools: (server, context) => {
     const config = loadPostgresConfig(context.env);
     const db = createPostgresDatabase(config);
+    context.onClose(() => db.close());
     registerPostgresTools(server, db, config);
   }
 };

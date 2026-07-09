@@ -1,6 +1,10 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { createStderrLogger } from "./logger.js";
-import type { ServerDefinition, ServerMode } from "./server-definition.js";
+import type {
+  ServerCleanup,
+  ServerDefinition,
+  ServerMode
+} from "./server-definition.js";
 
 export type CreateMcpServerOptions = {
   env?: NodeJS.ProcessEnv;
@@ -25,18 +29,47 @@ export const createMcpServerFromDefinition = async (
 ) => {
   const env = options.env ?? process.env;
   validateRequiredEnv(definition, env);
+  const cleanupCallbacks: ServerCleanup[] = [];
+  let closed = false;
 
   const server = new McpServer({
     name: definition.id,
     version: definition.version
   });
 
-  await definition.registerTools(server, {
-    env,
-    logger: createStderrLogger(definition.id),
-    mode: options.mode,
-    serverId: definition.id
-  });
+  const runCleanup = async () => {
+    if (closed) {
+      return;
+    }
+    closed = true;
+    for (const cleanup of cleanupCallbacks.splice(0).reverse()) {
+      await cleanup();
+    }
+  };
+
+  const originalClose = server.close.bind(server);
+  server.close = async () => {
+    try {
+      await originalClose();
+    } finally {
+      await runCleanup();
+    }
+  };
+
+  try {
+    await definition.registerTools(server, {
+      env,
+      logger: createStderrLogger(definition.id),
+      mode: options.mode,
+      onClose: (cleanup) => {
+        cleanupCallbacks.push(cleanup);
+      },
+      serverId: definition.id
+    });
+  } catch (error) {
+    await runCleanup();
+    throw error;
+  }
 
   return server;
 };

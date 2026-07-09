@@ -38,4 +38,30 @@ describe("createStreamableHttpApp", () => {
 
     await request(app).post("/mcp/missing").send({}).expect(404);
   });
+
+  it("requires bearer auth when configured", async () => {
+    const app = createStreamableHttpApp({
+      definitions: [fixtureServer],
+      env: {},
+      exposeRootMcp: false,
+      bearerToken: "secret"
+    });
+
+    await request(app).get("/servers").expect(401);
+    await request(app)
+      .get("/servers")
+      .set("Authorization", "Bearer secret")
+      .expect(200);
+  });
+
+  it("does not require bearer auth for health checks", async () => {
+    const app = createStreamableHttpApp({
+      definitions: [fixtureServer],
+      env: {},
+      exposeRootMcp: false,
+      bearerToken: "secret"
+    });
+
+    await request(app).get("/health").expect(200);
+  });
 });

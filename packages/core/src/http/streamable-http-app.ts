@@ -108,7 +108,13 @@ export const createStreamableHttpApp = (
         await server.close();
       };
 
-      await server.connect(transport);
+      try {
+        await server.connect(transport);
+      } catch (error) {
+        await transport.close();
+        await server.close();
+        throw error;
+      }
       session = {
         transport,
         close: async () => {

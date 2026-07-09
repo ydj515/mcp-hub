@@ -41,4 +41,16 @@ describe("buildInitPreview", () => {
       JSON.parse(result.content).mcpServers["mcp-hub-postgres"].args
     ).toEqual(["-y", "mcp-hub", "stdio", "postgres"]);
   });
+
+  it("rejects unsupported targets at runtime", () => {
+    expect(() =>
+      buildInitPreview({
+        target: "typo" as never,
+        scope: "project",
+        server: postgresServer,
+        commandMode: "npx",
+        packageName: "mcp-hub"
+      })
+    ).toThrow("Unsupported init target: typo");
+  });
 });

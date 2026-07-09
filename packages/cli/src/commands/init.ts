@@ -1,7 +1,7 @@
 import {
   buildInitPreview,
+  isInitTarget,
   type InitScope,
-  type InitTarget,
   type ServerRegistry
 } from "@mcp-hub/core";
 
@@ -15,7 +15,7 @@ export const runInitCommand = (
   args: string[],
   stdout: Pick<typeof console, "log"> = console
 ) => {
-  const target = readOption(args, "--target") as InitTarget | undefined;
+  const target = readOption(args, "--target");
   const serverId = readOption(args, "--server");
   const scope = (readOption(args, "--scope") ?? "project") as InitScope;
   const write = args.includes("--write");
@@ -24,6 +24,9 @@ export const runInitCommand = (
     throw new Error(
       "Usage: mcp-hub init --target <target> --server <server-id> [--scope project|user] [--write]"
     );
+  }
+  if (!isInitTarget(target)) {
+    throw new Error(`Unsupported init target: ${target}`);
   }
 
   const preview = buildInitPreview({
