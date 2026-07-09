@@ -14,10 +14,15 @@ export type SwaggerReference =
   | { type: "json"; value: unknown }
   | { type: "url"; value: string };
 
+const PUBLIC_DATA_ORIGIN = "https://www.data.go.kr";
+
 const detailPathFromUrl = (url: string) => {
   const match = url.match(/data\/(.+)$/);
   return match?.[1] ?? url;
 };
+
+export const resolvePublicDataUrl = (url: string) =>
+  new URL(url, PUBLIC_DATA_ORIGIN).toString();
 
 export const parseSearchResults = (
   body: unknown
@@ -103,6 +108,6 @@ export const getPublicDataApiDetails = async (apiId: string) => {
     return reference.value;
   }
 
-  const specResponse = await axios.get(reference.value);
+  const specResponse = await axios.get(resolvePublicDataUrl(reference.value));
   return specResponse.data;
 };

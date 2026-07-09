@@ -26,6 +26,16 @@ export type InitPreview = {
   content: string;
 };
 
+const initTargets = new Set<string>([
+  "antigravity",
+  "claude-desktop",
+  "codex",
+  "cursor"
+]);
+
+export const isInitTarget = (target: string | undefined): target is InitTarget =>
+  typeof target === "string" && initTargets.has(target);
+
 export const serverConfigName = (server: ServerDefinition) =>
   `mcp-hub-${server.id}`;
 
@@ -56,5 +66,8 @@ export const buildInitPreview = (request: InitRequest): InitPreview => {
   if (request.target === "claude-desktop") {
     return buildClaudeConfig(request);
   }
-  return buildAntigravityConfig(request);
+  if (request.target === "antigravity") {
+    return buildAntigravityConfig(request);
+  }
+  throw new Error(`Unsupported init target: ${String(request.target)}`);
 };

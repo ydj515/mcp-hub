@@ -28,12 +28,17 @@ export const loadPostgresConfig = (
     throw new Error("DATABASE_URL is required");
   }
 
+  const allowedSchemas = (env.ALLOWED_SCHEMAS ?? "public")
+    .split(",")
+    .map((schema) => schema.trim())
+    .filter(Boolean);
+  if (!allowedSchemas.length) {
+    throw new Error("ALLOWED_SCHEMAS must include at least one schema");
+  }
+
   return {
     databaseUrl: env.DATABASE_URL,
-    allowedSchemas: (env.ALLOWED_SCHEMAS ?? "public")
-      .split(",")
-      .map((schema) => schema.trim())
-      .filter(Boolean),
+    allowedSchemas,
     maxRows: parsePositiveInteger(env.MAX_ROWS, 500, "MAX_ROWS"),
     queryTimeoutMs: parsePositiveInteger(
       env.QUERY_TIMEOUT_MS,

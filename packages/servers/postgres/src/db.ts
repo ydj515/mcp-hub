@@ -1,10 +1,17 @@
 import pg from "pg";
 import type { PostgresConfig } from "./config.js";
-import { validateReadOnlySql, withMaxRowsLimit } from "./sql-safety.js";
+import {
+  validateAllowedSchemas,
+  validateReadOnlySql,
+  withMaxRowsLimit
+} from "./sql-safety.js";
 
 const { Pool } = pg;
 
 export type PostgresDatabase = ReturnType<typeof createPostgresDatabase>;
+
+const quoteIdentifier = (identifier: string) =>
+  `"${identifier.replace(/"/g, '""')}"`;
 
 export const createPostgresDatabase = (config: PostgresConfig) => {
   const pool = new Pool({
@@ -18,6 +25,17 @@ export const createPostgresDatabase = (config: PostgresConfig) => {
   ) => {
     const result = await pool.query<T>(sql, params);
     return result.rows;
+  };
+
+  const validateQueryAccess = (sql: string) => {
+    validateReadOnlySql(sql);
+    validateAllowedSchemas(sql, config.allowedSchemas);
+  };
+
+  const setLocalQueryGuards = async (client: pg.PoolClient) => {
+    const searchPath = config.allowedSchemas.map(quoteIdentifier).join(", ");
+    await client.query(`set local statement_timeout = ${config.queryTimeoutMs}`);
+    await client.query(`set local search_path = ${searchPath}`);
   };
 
   return {
@@ -56,10 +74,10 @@ export const createPostgresDatabase = (config: PostgresConfig) => {
           from information_schema.table_constraints tc
           join information_schema.key_column_usage kcu
             on tc.constraint_name = kcu.constraint_name
-            and tc.table_schema = kcu.table_schema
+            and tc.constraint_schema = kcu.constraint_schema
           join information_schema.constraint_column_usage ccu
             on ccu.constraint_name = tc.constraint_name
-            and ccu.table_schema = tc.table_schema
+            and ccu.constraint_schema = tc.constraint_schema
           where tc.constraint_type = 'FOREIGN KEY'
             and tc.table_schema = $1
             and tc.table_name = $2
@@ -86,11 +104,11 @@ export const createPostgresDatabase = (config: PostgresConfig) => {
         [schema, tableName]
       ),
     runReadOnlyQuery: async (sql: string) => {
-      validateReadOnlySql(sql);
+      validateQueryAccess(sql);
       const client = await pool.connect();
       try {
         await client.query("begin read only");
-        await client.query(`set local statement_timeout = ${config.queryTimeoutMs}`);
+        await setLocalQueryGuards(client);
         const result = await client.query(withMaxRowsLimit(sql, config.maxRows));
         await client.query("commit");
         return result.rows;
@@ -102,8 +120,22 @@ export const createPostgresDatabase = (config: PostgresConfig) => {
       }
     },
     explainQuery: async (sql: string) => {
-      validateReadOnlySql(sql);
-      return query(`explain (format json, analyze false) ${sql}`);
+      validateQueryAccess(sql);
+      const client = await pool.connect();
+      try {
+        await client.query("begin read only");
+        await setLocalQueryGuards(client);
+        const result = await client.query(
+          `explain (format json, analyze false) ${sql}`
+        );
+        await client.query("commit");
+        return result.rows;
+      } catch (error) {
+        await client.query("rollback");
+        throw error;
+      } finally {
+        client.release();
+      }
     }
   };
 };

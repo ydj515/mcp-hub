@@ -39,7 +39,41 @@ export const selectServeDefinitions = (
 
 const readOption = (args: string[], name: string, fallback: string) => {
   const index = args.indexOf(name);
-  return index >= 0 ? (args[index + 1] ?? fallback) : fallback;
+  if (index < 0) {
+    return fallback;
+  }
+  const value = args[index + 1];
+  if (!value || value.startsWith("--")) {
+    throw new Error(`${name} requires a value`);
+  }
+  return value;
+};
+
+export const parsePort = (value: string) => {
+  if (!/^\d+$/.test(value)) {
+    throw new Error(`Invalid port number: ${value}`);
+  }
+  const port = Number.parseInt(value, 10);
+  if (port <= 0 || port > 65535) {
+    throw new Error(`Invalid port number: ${value}`);
+  }
+  return port;
+};
+
+export const readBearerToken = (
+  authTokenEnv: string,
+  env: NodeJS.ProcessEnv = process.env
+) => {
+  if (!authTokenEnv) {
+    return undefined;
+  }
+  const token = env[authTokenEnv];
+  if (!token) {
+    throw new Error(
+      `Missing required auth token environment variable: ${authTokenEnv}`
+    );
+  }
+  return token;
 };
 
 export const runServeCommand = async (
@@ -47,10 +81,10 @@ export const runServeCommand = async (
   args: string[]
 ) => {
   const definitions = selectServeDefinitions(registry, args);
-  const port = Number.parseInt(readOption(args, "--port", "3333"), 10);
+  const port = parsePort(readOption(args, "--port", "3333"));
   const host = readOption(args, "--host", "127.0.0.1");
   const authTokenEnv = readOption(args, "--auth-token-env", "");
-  const bearerToken = authTokenEnv ? process.env[authTokenEnv] : undefined;
+  const bearerToken = readBearerToken(authTokenEnv);
 
   const app = createStreamableHttpApp({
     definitions,

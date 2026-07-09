@@ -2,12 +2,15 @@
   "name": "@mcp-hub/server-postgres",
   "version": "0.1.0",
   "type": "module",
-  "private": true,
+  "files": [
+    "dist"
+  ],
   "exports": {
     ".": "./dist/index.js"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json"
+    "build": "tsc -p tsconfig.json",
+    "prepack": "npm run build"
   },
   "dependencies": {
     "@mcp-hub/core": "0.1.0",

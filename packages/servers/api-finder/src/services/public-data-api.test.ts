@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
   extractSwaggerSpecReference,
-  parseSearchResults
+  parseSearchResults,
+  resolvePublicDataUrl
 } from "./public-data-api.js";
 
 describe("public-data-api service", () => {
@@ -40,5 +41,14 @@ describe("public-data-api service", () => {
       type: "json",
       value: { openapi: "3.0.0" }
     });
+  });
+
+  it("resolves relative public data URLs against data.go.kr", () => {
+    expect(resolvePublicDataUrl("/file/download.do?id=1")).toBe(
+      "https://www.data.go.kr/file/download.do?id=1"
+    );
+    expect(resolvePublicDataUrl("https://example.com/openapi.json")).toBe(
+      "https://example.com/openapi.json"
+    );
   });
 });
