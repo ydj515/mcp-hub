@@ -23,7 +23,7 @@
 - `DATABASE_URL`은 `postgres` 서버의 필수 환경 변수다.
 - stdio 모드에서는 stdout에 MCP JSON-RPC 메시지만 출력하고 로그는 stderr로 보낸다.
 - `.env`와 DB 접속 정보는 커밋하지 않는다.
-- 현재 사용자 변경분인 `shortcut-mcp/src/data/shortcuts.ts`와 untracked `database/`는 실행 전 상태를 확인하고 보존한다.
+- 현재 사용자 변경분인 `shortcut-mcp/src/data/shortcuts.ts`와 untracked `database/`는 실행 전 상태를 확인해 새 구조로 이전한 뒤, 검증 완료 후 legacy 사본은 제거한다.
 
 ---
 
@@ -2542,7 +2542,7 @@ git commit -m "feat: migrate postgres mcp to typescript"
 
 ---
 
-### Task 8: 문서, legacy 보존, 전체 검증
+### Task 8: 문서, legacy 정리, 전체 검증
 
 **Files:**
 - Modify: `README.md`
@@ -2550,13 +2550,11 @@ git commit -m "feat: migrate postgres mcp to typescript"
 - Create: `examples/cursor-shortcuts.mcp.json`
 - Create: `examples/claude-api-finder.json`
 - Create: `examples/antigravity-postgres.mcp.json`
-- Move: `api-finder-mcp/` to `legacy/api-finder-mcp/`
-- Move: `shortcut-mcp/` to `legacy/shortcut-mcp/`
-- Move: `database/pg-mcp/` to `legacy/database/pg-mcp/`
+- Remove: `legacy/`
 
 **Interfaces:**
 - Consumes: built CLI from earlier tasks.
-- Produces: migration-complete repo layout and usage docs.
+- Produces: migration-complete repo layout and usage docs without legacy source copies.
 
 - [ ] **Step 1: 전체 상태 확인**
 
@@ -2568,18 +2566,16 @@ git status --short
 
 Expected: only intentional changes from completed tasks remain. `.env` files must not be staged.
 
-- [ ] **Step 2: legacy 이동**
+- [ ] **Step 2: legacy 제거**
 
 Run:
 
 ```bash
-mkdir -p legacy/database
-git mv api-finder-mcp legacy/api-finder-mcp
-git mv shortcut-mcp legacy/shortcut-mcp
-git mv database/pg-mcp legacy/database/pg-mcp
+git rm -r legacy
+rm -rf legacy
 ```
 
-Expected: existing source history is preserved by `git mv`. If `database/pg-mcp/.env` exists, leave it untracked and remove it from staging with `git restore --staged database/pg-mcp/.env legacy/database/pg-mcp/.env`.
+Expected: current source tree no longer contains legacy copies. Existing source history remains available in Git commits.
 
 - [ ] **Step 3: README 갱신**
 
@@ -2754,7 +2750,7 @@ Expected: health returns `{"ok":true}` and servers lists `/mcp/api-finder`, `/mc
 - [ ] **Step 7: Commit**
 
 ```bash
-git add README.md examples legacy package.json package-lock.json packages
+git add README.md examples docs/superpowers legacy package.json package-lock.json packages
 git commit -m "docs: document mcp hub usage"
 ```
 
@@ -2772,7 +2768,7 @@ git commit -m "docs: document mcp hub usage"
 - Claude Desktop, Codex, Cursor, Antigravity 설정 preview: Task 5.
 - `pg-mcp` TypeScript 마이그레이션: Task 7.
 - npm 중심 패키징: Task 1, Task 3, Task 8.
-- legacy 보존: Task 8.
+- legacy 제거: Task 8.
 - 테스트와 검증: 각 task의 test/build/smoke step.
 
 ### Placeholder Scan
