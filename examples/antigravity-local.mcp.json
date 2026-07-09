@@ -35,7 +35,7 @@
         "postgres"
       ],
       "env": {
-        "DATABASE_URL": "${DATABASE_URL}"
+        "POSTGRESQL_URL": "${POSTGRESQL_URL}"
       }
     }
   }

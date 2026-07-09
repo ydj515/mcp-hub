@@ -6,7 +6,7 @@ const postgresServer: ServerDefinition = {
   id: "postgres",
   displayName: "PostgreSQL MCP",
   version: "0.1.0",
-  requiredEnv: ["DATABASE_URL"],
+  requiredEnv: ["POSTGRESQL_URL"],
   registerTools: () => {}
 };
 

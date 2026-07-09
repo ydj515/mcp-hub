@@ -59,7 +59,7 @@
 ```text
 PUBLIC_DATA_API_KEY
 MYSQL_URL
-DATABASE_URL
+POSTGRESQL_URL
 ```
 
 `shortcuts`는 별도 환경 변수가 필요 없습니다.

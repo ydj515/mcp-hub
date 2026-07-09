@@ -22,6 +22,6 @@ tool_timeout_sec = 60
 [mcp_servers.mcp_hub_postgres]
 command = "npx"
 args = ["-y", "mcp-hub", "stdio", "postgres"]
-env_vars = ["DATABASE_URL"]
+env_vars = ["POSTGRESQL_URL"]
 startup_timeout_sec = 20
 tool_timeout_sec = 60

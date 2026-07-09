@@ -24,8 +24,8 @@ const parsePositiveInteger = (
 export const loadPostgresConfig = (
   env: NodeJS.ProcessEnv
 ): PostgresConfig => {
-  if (!env.DATABASE_URL) {
-    throw new Error("DATABASE_URL is required");
+  if (!env.POSTGRESQL_URL) {
+    throw new Error("POSTGRESQL_URL is required");
   }
 
   const allowedSchemas = (env.ALLOWED_SCHEMAS ?? "public")
@@ -37,7 +37,7 @@ export const loadPostgresConfig = (
   }
 
   return {
-    databaseUrl: env.DATABASE_URL,
+    databaseUrl: env.POSTGRESQL_URL,
     allowedSchemas,
     maxRows: parsePositiveInteger(env.MAX_ROWS, 500, "MAX_ROWS"),
     queryTimeoutMs: parsePositiveInteger(

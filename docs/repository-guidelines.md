@@ -29,4 +29,4 @@ TypeScript strict mode, ES modules, `NodeNext` module resolution을 기준으로
 
 ## 보안과 설정 팁
 
-`.env`, credential, log, 로컬 editor 설정은 커밋하지 않습니다. `postgres` 서버는 읽기 전용 DB 계정 사용을 권장합니다. `DATABASE_URL`, `ALLOWED_SCHEMAS`, row/query limit은 신중하게 설정하세요. remote HTTP serving을 사용할 때는 `--host`와 인증 관련 옵션을 명확히 지정합니다.
+`.env`, credential, log, 로컬 editor 설정은 커밋하지 않습니다. `postgres` 서버는 읽기 전용 DB 계정 사용을 권장합니다. `POSTGRESQL_URL`, `ALLOWED_SCHEMAS`, row/query limit은 신중하게 설정하세요. remote HTTP serving을 사용할 때는 `--host`와 인증 관련 옵션을 명확히 지정합니다.

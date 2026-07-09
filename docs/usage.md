@@ -122,7 +122,7 @@ PUBLIC_DATA_API_KEY=...
 `postgres`는 데이터베이스 연결 정보가 필요합니다.
 
 ```text
-DATABASE_URL=postgresql://readonly:password@localhost:5432/app
+POSTGRESQL_URL=postgresql://readonly:password@localhost:5432/app
 ALLOWED_SCHEMAS=public
 MAX_ROWS=500
 QUERY_TIMEOUT_MS=10000
