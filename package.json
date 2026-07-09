@@ -9,6 +9,8 @@
   ],
   "scripts": {
     "build": "npm run build --workspaces --if-present",
+    "lint": "oxlint . --import-plugin --deny-warnings",
+    "lint:fix": "oxlint . --import-plugin --fix",
     "typecheck": "tsc -b packages/core packages/servers/shortcuts packages/servers/api-finder packages/servers/mysql packages/servers/postgres packages/cli",
     "test": "vitest run",
     "test:watch": "vitest"
@@ -16,6 +18,7 @@
   "devDependencies": {
     "@types/node": "^24.13.3",
     "@types/supertest": "^7.2.0",
+    "oxlint": "^1.73.0",
     "supertest": "^7.2.2",
     "tsx": "^4.23.0",
     "typescript": "^7.0.2",

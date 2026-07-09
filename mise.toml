@@ -2,12 +2,20 @@
 node = "24.13.0"
 
 [tasks.check]
-description = "Run the standard quality gate: typecheck and tests."
-depends = ["typecheck", "test"]
+description = "Run the standard quality gate: lint, typecheck, and tests."
+depends = ["lint", "typecheck", "test"]
 
 [tasks.build]
 description = "Compile all npm workspaces with TypeScript."
 run = "npm run build"
+
+[tasks.lint]
+description = "Run Oxlint across the repository."
+run = "npm run lint"
+
+[tasks."lint:fix"]
+description = "Auto-fix Oxlint issues where possible."
+run = "npm run lint:fix"
 
 [tasks.typecheck]
 description = "Run TypeScript project reference type checks."
