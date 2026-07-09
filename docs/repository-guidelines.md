@@ -2,22 +2,25 @@
 
 ## 프로젝트 구조와 모듈 구성
 
-이 레포지토리는 MCP Hub를 위한 Node/TypeScript npm workspace입니다. 소스 코드는 `packages/` 아래에 있습니다. `packages/core`는 공통 서버 정의, 설정 adapter, transport, HTTP helper를 담고, `packages/cli`는 `mcp-hub` CLI를 제공합니다. 개별 MCP 서버는 `packages/servers/*`에 있으며 현재 `api-finder`, `postgres`, `shortcuts`가 포함됩니다. 테스트는 구현 파일 가까이에 `*.test.ts` 이름으로 둡니다. 사용자 문서는 `docs/`, 실행 가능한 클라이언트 예시는 `examples/`에 둡니다.
+이 레포지토리는 MCP Hub를 위한 Node/TypeScript npm workspace입니다. 소스 코드는 `packages/` 아래에 있습니다. `packages/core`는 공통 서버 정의, 설정 adapter, transport, HTTP helper를 담고, `packages/cli`는 `mcp-hub` CLI를 제공합니다. 개별 MCP 서버는 `packages/servers/*`에 있으며 현재 `api-finder`, `shortcuts`, `mysql`, `postgres`가 포함됩니다. MCP 서버의 `src/` 계층은 [서버 패키지 구조](server-package-structure.md)를 따릅니다. 테스트는 구현 파일 가까이에 `*.test.ts` 이름으로 둡니다. 사용자 문서는 `docs/`, 실행 가능한 클라이언트 예시는 `examples/`에 둡니다.
 
 ## 빌드, 테스트, 개발 명령
 
 - `mise install`: `mise.toml`에 고정된 Node.js `24.13.0`을 설치합니다.
 - `npm install`: 루트와 workspace 의존성을 설치합니다.
 - `npm run build`: 모든 workspace를 TypeScript로 컴파일합니다.
+- `npm run lint`: Oxlint로 repository lint를 실행합니다.
+- `npm run lint:fix`: 자동 수정 가능한 lint 문제를 수정합니다.
 - `npm run typecheck`: project reference 기반 타입 검사를 실행합니다.
 - `npm run test`: Vitest 테스트를 한 번 실행합니다.
 - `npm run test:watch`: Vitest watch 모드를 실행합니다.
+- `mise run check`: lint, typecheck, test를 함께 실행합니다.
 - `node packages/cli/dist/index.js list`: 빌드 후 등록된 MCP 서버를 확인합니다.
 - `node packages/cli/dist/index.js serve all --port 3333`: 모든 서버를 서버별 HTTP endpoint로 노출합니다.
 
 ## 코딩 스타일과 네이밍
 
-TypeScript strict mode, ES modules, `NodeNext` module resolution을 기준으로 작성합니다. 들여쓰기는 2칸을 사용하고, 가능한 named export를 선호합니다. 패키지와 디렉터리는 kebab-case, 변수와 함수는 camelCase, TypeScript 타입은 PascalCase를 사용합니다. 새 MCP 서버는 `packages/servers/<server>/src/index.ts`에서 `ServerDefinition`을 export해야 합니다.
+TypeScript strict mode, ES modules, `NodeNext` module resolution을 기준으로 작성합니다. 들여쓰기는 2칸을 사용하고, 가능한 named export를 선호합니다. 패키지와 디렉터리는 kebab-case, 변수와 함수는 camelCase, TypeScript 타입은 PascalCase를 사용합니다. 새 MCP 서버는 `packages/servers/<server>/src/index.ts`를 public entry로 두고, 상세 구조는 [서버 패키지 구조](server-package-structure.md)를 따릅니다.
 
 ## 테스트 지침
 

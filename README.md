@@ -42,6 +42,7 @@ node packages/cli/dist/index.js init --target codex --server postgres --scope pr
 
 - [사용 가이드](docs/usage.md)
 - [환경별 MCP 설정 파일 위치](docs/config-locations.md)
+- [서버 패키지 구조](docs/server-package-structure.md)
 - [예시 설정 파일](examples/README.md)
 
 ## 개발 환경
