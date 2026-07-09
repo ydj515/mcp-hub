@@ -18,10 +18,13 @@ export const registerApiFinderTools = (
   server: McpServer,
   env: NodeJS.ProcessEnv
 ) => {
-  server.tool(
+  server.registerTool(
     "searchPublicDataAPI",
-    "Search data.go.kr public APIs for a service idea and keywords.",
-    searchParameters.shape,
+    {
+      title: "Search Public Data API",
+      description: "Search data.go.kr public APIs for a service idea and keywords.",
+      inputSchema: searchParameters.shape
+    },
     async ({ keywords }: z.infer<typeof searchParameters>) => {
       const apiKey = env.PUBLIC_DATA_API_KEY;
       if (!apiKey) {
@@ -36,10 +39,13 @@ export const registerApiFinderTools = (
     }
   );
 
-  server.tool(
+  server.registerTool(
     "getPublicDataAPIDetails",
-    "Fetch the Swagger/OpenAPI specification for a selected public API.",
-    detailsParameters.shape,
+    {
+      title: "Get Public Data API Details",
+      description: "Fetch the Swagger/OpenAPI specification for a selected public API.",
+      inputSchema: detailsParameters.shape
+    },
     async ({ api_id }: z.infer<typeof detailsParameters>) => {
       const spec = await getPublicDataApiDetails(api_id);
       return {

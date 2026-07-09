@@ -14,9 +14,12 @@ const searchShortcutsParameters = z.object({
 });
 
 export const registerShortcutTools = (server: McpServer) => {
-  server.tool(
+  server.registerTool(
     "list_shortcut_categories",
-    "List supported shortcut categories",
+    {
+      title: "List Shortcut Categories",
+      description: "List supported shortcut categories"
+    },
     async () => {
       const categories = listShortcutCategories();
       return {
@@ -35,10 +38,13 @@ export const registerShortcutTools = (server: McpServer) => {
     }
   );
 
-  server.tool(
+  server.registerTool(
     "search_shortcuts",
-    "Search keyboard shortcuts by query and optional filters.",
-    searchShortcutsParameters.shape,
+    {
+      title: "Search Shortcuts",
+      description: "Search keyboard shortcuts by query and optional filters.",
+      inputSchema: searchShortcutsParameters.shape
+    },
     async ({
       query,
       category,

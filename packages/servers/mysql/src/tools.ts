@@ -33,10 +33,13 @@ export const registerMySqlTools = (
   db: MySqlDatabase,
   config: MySqlConfig
 ) => {
-  server.tool(
+  server.registerTool(
     "list_tables",
-    "List tables in an allowed MySQL schema.",
-    schemaParameter.shape,
+    {
+      title: "List Tables",
+      description: "List tables in an allowed MySQL schema.",
+      inputSchema: schemaParameter.shape
+    },
     async ({ schema = defaultSchema(config) }) => {
       validateSchema(schema, config);
       const tables = await db.listTables(schema);
@@ -52,10 +55,13 @@ export const registerMySqlTools = (
     }
   );
 
-  server.tool(
+  server.registerTool(
     "describe_table",
-    "Describe columns for a MySQL table.",
-    tableParameter.shape,
+    {
+      title: "Describe Table",
+      description: "Describe columns for a MySQL table.",
+      inputSchema: tableParameter.shape
+    },
     async ({ schema = defaultSchema(config), table_name }) => {
       validateSchema(schema, config);
       const columns = await db.describeTable(schema, table_name);
@@ -71,10 +77,13 @@ export const registerMySqlTools = (
     }
   );
 
-  server.tool(
+  server.registerTool(
     "run_query",
-    "Run a read-only MySQL query.",
-    queryParameter.shape,
+    {
+      title: "Run Query",
+      description: "Run a read-only MySQL query.",
+      inputSchema: queryParameter.shape
+    },
     async ({ sql }) => {
       const rows = await db.runReadOnlyQuery(sql);
       return {
@@ -97,10 +106,13 @@ export const registerMySqlTools = (
     }
   );
 
-  server.tool(
+  server.registerTool(
     "get_foreign_keys",
-    "List foreign keys for a MySQL table.",
-    tableParameter.shape,
+    {
+      title: "Get Foreign Keys",
+      description: "List foreign keys for a MySQL table.",
+      inputSchema: tableParameter.shape
+    },
     async ({ schema = defaultSchema(config), table_name }) => {
       validateSchema(schema, config);
       const foreign_keys = await db.getForeignKeys(schema, table_name);
@@ -116,10 +128,13 @@ export const registerMySqlTools = (
     }
   );
 
-  server.tool(
+  server.registerTool(
     "explain_query",
-    "Return EXPLAIN JSON for a read-only MySQL query.",
-    queryParameter.shape,
+    {
+      title: "Explain Query",
+      description: "Return EXPLAIN JSON for a read-only MySQL query.",
+      inputSchema: queryParameter.shape
+    },
     async ({ sql }) => {
       const plan = await db.explainQuery(sql);
       return {

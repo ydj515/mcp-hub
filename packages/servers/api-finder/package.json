@@ -15,6 +15,6 @@
   "dependencies": {
     "@mcp-hub/core": "0.1.0",
     "axios": "^1.10.0",
-    "zod": "^3.23.8"
+    "zod": "^4.4.3"
   }
 }
