@@ -63,11 +63,14 @@ node packages/cli/dist/index.js init --target antigravity --server postgres --sc
 ## 예시 설정
 
 ```text
+examples/README.md
 examples/codex-all.config.toml
 examples/cursor-all.mcp.json
 examples/claude-all.json
 examples/antigravity-all.mcp.json
 ```
+
+각 환경별 글로벌/프로젝트별 설정 파일 위치는 `examples/README.md`를 확인하세요.
 
 ## Postgres 환경 변수
 
