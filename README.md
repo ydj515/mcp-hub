@@ -60,6 +60,15 @@ node packages/cli/dist/index.js init --target antigravity --server postgres --sc
 
 `init`은 현재 preview만 출력합니다. 기존 설정 파일 병합과 `--write` 쓰기는 후속 작업 범위입니다.
 
+## 예시 설정
+
+```text
+examples/codex-postgres.config.toml
+examples/cursor-shortcuts.mcp.json
+examples/claude-api-finder.json
+examples/antigravity-postgres.mcp.json
+```
+
 ## Postgres 환경 변수
 
 ```text
