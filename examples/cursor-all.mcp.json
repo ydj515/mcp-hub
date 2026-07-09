@@ -1,0 +1,23 @@
+{
+  "mcpServers": {
+    "mcp-hub-api-finder": {
+      "command": "npx",
+      "args": ["-y", "mcp-hub", "stdio", "api-finder"],
+      "env": {
+        "PUBLIC_DATA_API_KEY": "${PUBLIC_DATA_API_KEY}"
+      }
+    },
+    "mcp-hub-shortcuts": {
+      "command": "npx",
+      "args": ["-y", "mcp-hub", "stdio", "shortcuts"],
+      "env": {}
+    },
+    "mcp-hub-postgres": {
+      "command": "npx",
+      "args": ["-y", "mcp-hub", "stdio", "postgres"],
+      "env": {
+        "DATABASE_URL": "${DATABASE_URL}"
+      }
+    }
+  }
+}
