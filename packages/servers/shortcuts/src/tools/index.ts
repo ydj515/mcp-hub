@@ -1,17 +1,13 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { z } from "zod";
 import {
   listShortcutCategories,
   searchShortcuts,
   type ShortcutPlatform
-} from "./services/shortcutSearch.js";
-
-const searchShortcutsParameters = z.object({
-  query: z.string().min(1).max(300),
-  category: z.string().min(1).optional(),
-  platform: z.enum(["mac", "win"]).optional(),
-  limit: z.number().int().min(1).max(25).optional()
-});
+} from "../services/shortcut-search.js";
+import {
+  searchShortcutsParameters,
+  type SearchShortcutsParameters
+} from "./schemas.js";
 
 export const registerShortcutTools = (server: McpServer) => {
   server.registerTool(
@@ -50,7 +46,7 @@ export const registerShortcutTools = (server: McpServer) => {
       category,
       platform,
       limit
-    }: z.infer<typeof searchShortcutsParameters>) => {
+    }: SearchShortcutsParameters) => {
       const results = searchShortcuts({
         query,
         category,

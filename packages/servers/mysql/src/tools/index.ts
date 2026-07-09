@@ -1,22 +1,16 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { z } from "zod";
-import type { PostgresConfig } from "./config.js";
-import type { PostgresDatabase } from "./db.js";
+import type { MySqlConfig } from "../config.js";
+import type { MySqlDatabase } from "../services/database.js";
+import {
+  queryParameter,
+  schemaParameter,
+  tableParameter,
+  type QueryParameter,
+  type SchemaParameter,
+  type TableParameter
+} from "./schemas.js";
 
-const schemaParameter = z.object({
-  schema: z.string().min(1).optional()
-});
-
-const tableParameter = z.object({
-  schema: z.string().min(1).optional(),
-  table_name: z.string().min(1)
-});
-
-const queryParameter = z.object({
-  sql: z.string().min(1)
-});
-
-const validateSchema = (schema: string, config: PostgresConfig) => {
+const validateSchema = (schema: string, config: MySqlConfig) => {
   if (!config.allowedSchemas.includes(schema)) {
     throw new Error(
       `Schema "${schema}" is not allowed. Allowed schemas: ${config.allowedSchemas.join(", ")}`
@@ -24,21 +18,23 @@ const validateSchema = (schema: string, config: PostgresConfig) => {
   }
 };
 
+const defaultSchema = (config: MySqlConfig) => config.allowedSchemas[0];
+
 const jsonText = (value: unknown) => JSON.stringify(value, null, 2);
 
-export const registerPostgresTools = (
+export const registerMySqlTools = (
   server: McpServer,
-  db: PostgresDatabase,
-  config: PostgresConfig
+  db: MySqlDatabase,
+  config: MySqlConfig
 ) => {
   server.registerTool(
     "list_tables",
     {
       title: "List Tables",
-      description: "List tables in an allowed PostgreSQL schema.",
+      description: "List tables in an allowed MySQL schema.",
       inputSchema: schemaParameter.shape
     },
-    async ({ schema = "public" }) => {
+    async ({ schema = defaultSchema(config) }: SchemaParameter) => {
       validateSchema(schema, config);
       const tables = await db.listTables(schema);
       return {
@@ -57,10 +53,10 @@ export const registerPostgresTools = (
     "describe_table",
     {
       title: "Describe Table",
-      description: "Describe columns for a PostgreSQL table.",
+      description: "Describe columns for a MySQL table.",
       inputSchema: tableParameter.shape
     },
-    async ({ schema = "public", table_name }) => {
+    async ({ schema = defaultSchema(config), table_name }: TableParameter) => {
       validateSchema(schema, config);
       const columns = await db.describeTable(schema, table_name);
       return {
@@ -79,10 +75,10 @@ export const registerPostgresTools = (
     "run_query",
     {
       title: "Run Query",
-      description: "Run a read-only SQL query.",
+      description: "Run a read-only MySQL query.",
       inputSchema: queryParameter.shape
     },
-    async ({ sql }) => {
+    async ({ sql }: QueryParameter) => {
       const rows = await db.runReadOnlyQuery(sql);
       return {
         content: [
@@ -108,10 +104,10 @@ export const registerPostgresTools = (
     "get_foreign_keys",
     {
       title: "Get Foreign Keys",
-      description: "List foreign keys for a PostgreSQL table.",
+      description: "List foreign keys for a MySQL table.",
       inputSchema: tableParameter.shape
     },
-    async ({ schema = "public", table_name }) => {
+    async ({ schema = defaultSchema(config), table_name }: TableParameter) => {
       validateSchema(schema, config);
       const foreign_keys = await db.getForeignKeys(schema, table_name);
       return {
@@ -130,36 +126,14 @@ export const registerPostgresTools = (
     "explain_query",
     {
       title: "Explain Query",
-      description: "Return EXPLAIN JSON for a read-only SQL query.",
+      description: "Return EXPLAIN JSON for a read-only MySQL query.",
       inputSchema: queryParameter.shape
     },
-    async ({ sql }) => {
+    async ({ sql }: QueryParameter) => {
       const plan = await db.explainQuery(sql);
       return {
         content: [{ type: "text", text: jsonText(plan) }],
         structuredContent: { plan }
-      };
-    }
-  );
-
-  server.registerTool(
-    "get_table_stats",
-    {
-      title: "Get Table Stats",
-      description: "Return PostgreSQL table statistics.",
-      inputSchema: tableParameter.shape
-    },
-    async ({ schema = "public", table_name }) => {
-      validateSchema(schema, config);
-      const stats = await db.getTableStats(schema, table_name);
-      return {
-        content: [
-          {
-            type: "text",
-            text: jsonText({ table: `${schema}.${table_name}`, stats })
-          }
-        ],
-        structuredContent: { table: `${schema}.${table_name}`, stats }
       };
     }
   );

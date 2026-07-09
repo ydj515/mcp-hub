@@ -1,16 +1,13 @@
 import mysql from "mysql2/promise";
 import type { RowDataPacket } from "mysql2/promise";
-import type { MySqlConfig } from "./config.js";
+import type { MySqlConfig } from "../config.js";
 import {
   validateAllowedSchemas,
   validateReadOnlySql,
   withMaxRowsLimit
-} from "./sql-safety.js";
+} from "../sql/safety.js";
 
 export type MySqlDatabase = ReturnType<typeof createMySqlDatabase>;
-
-const quoteIdentifier = (identifier: string) =>
-  `\`${identifier.replace(/`/g, "``")}\``;
 
 export const createMySqlDatabase = (config: MySqlConfig) => {
   const pool = mysql.createPool({

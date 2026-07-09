@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { listShortcutCategories, searchShortcuts } from "./shortcutSearch.js";
+import { listShortcutCategories, searchShortcuts } from "./shortcut-search.js";
 
-describe("shortcutSearch", () => {
+describe("shortcut-search", () => {
   it("lists registered categories", () => {
     const categories = listShortcutCategories();
     expect(categories.length).toBeGreaterThan(0);

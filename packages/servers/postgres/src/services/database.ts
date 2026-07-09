@@ -1,10 +1,10 @@
 import pg from "pg";
-import type { PostgresConfig } from "./config.js";
+import type { PostgresConfig } from "../config.js";
 import {
   validateAllowedSchemas,
   validateReadOnlySql,
   withMaxRowsLimit
-} from "./sql-safety.js";
+} from "../sql/safety.js";
 
 const { Pool } = pg;
 

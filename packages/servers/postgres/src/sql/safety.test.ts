@@ -3,7 +3,7 @@ import {
   validateAllowedSchemas,
   validateReadOnlySql,
   withMaxRowsLimit
-} from "./sql-safety.js";
+} from "./safety.js";
 
 describe("validateReadOnlySql", () => {
   it("allows SELECT statements", () => {
