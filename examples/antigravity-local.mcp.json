@@ -20,6 +20,13 @@
       ],
       "env": {}
     },
+    "mcp-hub-mysql": {
+      "command": "node",
+      "args": ["<mcp-hub-repo>/packages/cli/dist/index.js", "stdio", "mysql"],
+      "env": {
+        "MYSQL_URL": "${MYSQL_URL}"
+      }
+    },
     "mcp-hub-postgres": {
       "command": "node",
       "args": [

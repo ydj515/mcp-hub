@@ -8,6 +8,7 @@
   "references": [
     { "path": "../core" },
     { "path": "../servers/api-finder" },
+    { "path": "../servers/mysql" },
     { "path": "../servers/postgres" },
     { "path": "../servers/shortcuts" }
   ],

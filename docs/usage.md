@@ -28,6 +28,7 @@ node packages/cli/dist/index.js list
 | --- | --- |
 | `api-finder` | data.go.kr 공공데이터 API 검색과 Swagger/OpenAPI 명세 조회 |
 | `shortcuts` | macOS/Windows 단축키 카테고리와 검색 |
+| `mysql` | MySQL 읽기 전용 introspection과 쿼리 실행 |
 | `postgres` | PostgreSQL 읽기 전용 introspection과 쿼리 실행 |
 
 ## 로컬 stdio 실행
@@ -37,6 +38,7 @@ node packages/cli/dist/index.js list
 ```bash
 node packages/cli/dist/index.js stdio api-finder
 node packages/cli/dist/index.js stdio shortcuts
+node packages/cli/dist/index.js stdio mysql
 node packages/cli/dist/index.js stdio postgres
 ```
 
@@ -62,7 +64,7 @@ npm 배포 후에는 프로젝트별 MCP 설정에서 다음 형태를 권장합
 }
 ```
 
-서버 id만 바꾸면 `api-finder`, `shortcuts`, `postgres`를 같은 방식으로 등록할 수 있습니다.
+서버 id만 바꾸면 `api-finder`, `shortcuts`, `mysql`, `postgres`를 같은 방식으로 등록할 수 있습니다.
 
 ## Streamable HTTP 실행
 
@@ -83,6 +85,7 @@ node packages/cli/dist/index.js serve all --port 3333
 ```text
 http://localhost:3333/mcp/api-finder
 http://localhost:3333/mcp/shortcuts
+http://localhost:3333/mcp/mysql
 http://localhost:3333/mcp/postgres
 ```
 
@@ -126,10 +129,22 @@ QUERY_TIMEOUT_MS=10000
 PG_POOL_MAX=5
 ```
 
+`mysql`은 데이터베이스 연결 정보가 필요합니다.
+
+```text
+MYSQL_URL=mysql://readonly:password@localhost:3306/app
+MYSQL_ALLOWED_SCHEMAS=app
+MYSQL_MAX_ROWS=500
+MYSQL_QUERY_TIMEOUT_MS=10000
+MYSQL_POOL_LIMIT=5
+```
+
 `shortcuts`는 별도 환경 변수가 필요 없습니다.
 
 > `postgres` 서버는 읽기 전용 DB 계정으로 실행하는 것을 권장합니다.
 > `ALLOWED_SCHEMAS`를 지정하면 노출할 schema 범위를 줄일 수 있습니다.
+> `mysql` 서버도 읽기 전용 DB 계정으로 실행하는 것을 권장합니다.
+> `MYSQL_ALLOWED_SCHEMAS`를 지정하면 노출할 schema 범위를 줄일 수 있습니다.
 
 ## 배포 후 사용 흐름
 

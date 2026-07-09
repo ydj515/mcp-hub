@@ -12,6 +12,13 @@ env_vars = []
 startup_timeout_sec = 20
 tool_timeout_sec = 60
 
+[mcp_servers.mcp_hub_mysql]
+command = "node"
+args = ["<mcp-hub-repo>/packages/cli/dist/index.js", "stdio", "mysql"]
+env_vars = ["MYSQL_URL"]
+startup_timeout_sec = 20
+tool_timeout_sec = 60
+
 [mcp_servers.mcp_hub_postgres]
 command = "node"
 args = ["<mcp-hub-repo>/packages/cli/dist/index.js", "stdio", "postgres"]

@@ -1,0 +1,20 @@
+{
+  "name": "@mcp-hub/server-mysql",
+  "version": "0.1.0",
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "prepack": "npm run build"
+  },
+  "dependencies": {
+    "@mcp-hub/core": "0.1.0",
+    "mysql2": "^3.15.0",
+    "zod": "^3.23.8"
+  }
+}

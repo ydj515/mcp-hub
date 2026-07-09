@@ -15,6 +15,7 @@
   "dependencies": {
     "@mcp-hub/core": "0.1.0",
     "@mcp-hub/server-api-finder": "0.1.0",
+    "@mcp-hub/server-mysql": "0.1.0",
     "@mcp-hub/server-postgres": "0.1.0",
     "@mcp-hub/server-shortcuts": "0.1.0"
   }

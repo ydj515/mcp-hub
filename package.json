@@ -9,7 +9,7 @@
   ],
   "scripts": {
     "build": "npm run build --workspaces --if-present",
-    "typecheck": "tsc -b packages/core packages/servers/shortcuts packages/servers/api-finder packages/servers/postgres packages/cli",
+    "typecheck": "tsc -b packages/core packages/servers/shortcuts packages/servers/api-finder packages/servers/mysql packages/servers/postgres packages/cli",
     "test": "vitest run",
     "test:watch": "vitest"
   },

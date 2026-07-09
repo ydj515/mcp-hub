@@ -1,0 +1,390 @@
+const DANGEROUS_PATTERN =
+  /\b(DROP|DELETE|TRUNCATE|ALTER|CREATE|INSERT|UPDATE|GRANT|REVOKE|LOAD|LOCK|UNLOCK|CALL|SET\s+ROLE|SET\s+SESSION)\b/i;
+
+type MaskedSql = {
+  code: string;
+  semicolonIndexes: number[];
+};
+
+type SqlToken = {
+  type: "comma" | "dot" | "identifier" | "open_paren" | "other";
+  value: string;
+};
+
+const maskSqlCode = (sql: string): MaskedSql => {
+  const chars = sql.split("");
+  const semicolonIndexes: number[] = [];
+  let index = 0;
+
+  const maskRange = (start: number, end: number) => {
+    for (let position = start; position < end; position += 1) {
+      chars[position] = /\s/.test(chars[position]) ? chars[position] : " ";
+    }
+  };
+
+  while (index < sql.length) {
+    const char = sql[index];
+    const next = sql[index + 1];
+
+    if (char === "'") {
+      const start = index;
+      index += 1;
+      while (index < sql.length) {
+        if (sql[index] === "\\" && index + 1 < sql.length) {
+          index += 2;
+          continue;
+        }
+        if (sql[index] === "'" && sql[index + 1] === "'") {
+          index += 2;
+          continue;
+        }
+        if (sql[index] === "'") {
+          index += 1;
+          break;
+        }
+        index += 1;
+      }
+      maskRange(start, index);
+      continue;
+    }
+
+    if (char === '"' || char === "`") {
+      const quote = char;
+      const start = index;
+      index += 1;
+      while (index < sql.length) {
+        if (sql[index] === quote && sql[index + 1] === quote) {
+          index += 2;
+          continue;
+        }
+        if (sql[index] === quote) {
+          index += 1;
+          break;
+        }
+        index += 1;
+      }
+      maskRange(start, index);
+      continue;
+    }
+
+    if (char === "-" && next === "-") {
+      const start = index;
+      index += 2;
+      while (index < sql.length && sql[index] !== "\n") {
+        index += 1;
+      }
+      maskRange(start, index);
+      continue;
+    }
+
+    if (char === "#") {
+      const start = index;
+      index += 1;
+      while (index < sql.length && sql[index] !== "\n") {
+        index += 1;
+      }
+      maskRange(start, index);
+      continue;
+    }
+
+    if (char === "/" && next === "*") {
+      const start = index;
+      index += 2;
+      while (index < sql.length) {
+        if (sql[index] === "*" && sql[index + 1] === "/") {
+          index += 2;
+          break;
+        }
+        index += 1;
+      }
+      maskRange(start, index);
+      continue;
+    }
+
+    if (char === ";") {
+      semicolonIndexes.push(index);
+    }
+    index += 1;
+  }
+
+  return {
+    code: chars.join(""),
+    semicolonIndexes
+  };
+};
+
+const stripTrailingStatementSemicolon = (sql: string) => {
+  const masked = maskSqlCode(sql);
+  if (!masked.semicolonIndexes.length) {
+    return sql.trim();
+  }
+
+  const [lastSemicolon] = masked.semicolonIndexes.slice(-1);
+  if (masked.semicolonIndexes.length > 1) {
+    throw new Error("Only one SQL statement is allowed");
+  }
+
+  if (masked.code.slice(lastSemicolon + 1).trim()) {
+    throw new Error("Only one SQL statement is allowed");
+  }
+
+  return `${sql.slice(0, lastSemicolon)}${sql.slice(lastSemicolon + 1)}`.trim();
+};
+
+const readQuotedIdentifier = (sql: string, index: number, quote: string) => {
+  let value = "";
+  let cursor = index + 1;
+
+  while (cursor < sql.length) {
+    if (sql[cursor] === quote && sql[cursor + 1] === quote) {
+      value += quote;
+      cursor += 2;
+      continue;
+    }
+    if (sql[cursor] === quote) {
+      return { value, nextIndex: cursor + 1 };
+    }
+    value += sql[cursor];
+    cursor += 1;
+  }
+
+  return { value, nextIndex: cursor };
+};
+
+const tokenizeSql = (sql: string): SqlToken[] => {
+  const tokens: SqlToken[] = [];
+  let index = 0;
+
+  const skipStringOrComment = () => {
+    const char = sql[index];
+    const next = sql[index + 1];
+
+    if (char === "'") {
+      index += 1;
+      while (index < sql.length) {
+        if (sql[index] === "\\" && index + 1 < sql.length) {
+          index += 2;
+          continue;
+        }
+        if (sql[index] === "'" && sql[index + 1] === "'") {
+          index += 2;
+          continue;
+        }
+        if (sql[index] === "'") {
+          index += 1;
+          break;
+        }
+        index += 1;
+      }
+      return true;
+    }
+
+    if (char === "-" && next === "-") {
+      index += 2;
+      while (index < sql.length && sql[index] !== "\n") {
+        index += 1;
+      }
+      return true;
+    }
+
+    if (char === "#") {
+      index += 1;
+      while (index < sql.length && sql[index] !== "\n") {
+        index += 1;
+      }
+      return true;
+    }
+
+    if (char === "/" && next === "*") {
+      index += 2;
+      while (index < sql.length) {
+        if (sql[index] === "*" && sql[index + 1] === "/") {
+          index += 2;
+          break;
+        }
+        index += 1;
+      }
+      return true;
+    }
+
+    return false;
+  };
+
+  while (index < sql.length) {
+    if (/\s/.test(sql[index])) {
+      index += 1;
+      continue;
+    }
+
+    if (skipStringOrComment()) {
+      continue;
+    }
+
+    if (sql[index] === "`" || sql[index] === '"') {
+      const identifier = readQuotedIdentifier(sql, index, sql[index]);
+      tokens.push({ type: "identifier", value: identifier.value });
+      index = identifier.nextIndex;
+      continue;
+    }
+
+    if (/[A-Za-z_]/.test(sql[index])) {
+      const start = index;
+      index += 1;
+      while (index < sql.length && /[A-Za-z0-9_$]/.test(sql[index])) {
+        index += 1;
+      }
+      tokens.push({
+        type: "identifier",
+        value: sql.slice(start, index).toLowerCase()
+      });
+      continue;
+    }
+
+    if (sql[index] === ".") {
+      tokens.push({ type: "dot", value: "." });
+    } else if (sql[index] === ",") {
+      tokens.push({ type: "comma", value: "," });
+    } else if (sql[index] === "(") {
+      tokens.push({ type: "open_paren", value: "(" });
+    } else {
+      tokens.push({ type: "other", value: sql[index] });
+    }
+    index += 1;
+  }
+
+  return tokens;
+};
+
+const RELATION_BOUNDARY_KEYWORDS = new Set([
+  "where",
+  "group",
+  "order",
+  "having",
+  "limit",
+  "offset",
+  "union",
+  "except",
+  "intersect",
+  "on",
+  "using"
+]);
+
+const optionalRelationModifiers = new Set(["lateral"]);
+
+const isAllowedSchema = (schema: string, allowedSchemas: string[]) =>
+  allowedSchemas.some(
+    (allowedSchema) =>
+      allowedSchema === schema || allowedSchema.toLowerCase() === schema
+  );
+
+export const validateAllowedSchemas = (
+  sql: string,
+  allowedSchemas: string[]
+) => {
+  const tokens = tokenizeSql(sql);
+  let expectingRelation = false;
+  let relationListActive = false;
+
+  for (let index = 0; index < tokens.length; index += 1) {
+    const token = tokens[index];
+
+    if (
+      token.type === "identifier" &&
+      RELATION_BOUNDARY_KEYWORDS.has(token.value)
+    ) {
+      relationListActive = false;
+      expectingRelation = false;
+      continue;
+    }
+
+    if (
+      token.type === "identifier" &&
+      (token.value === "from" || token.value === "join")
+    ) {
+      expectingRelation = true;
+      relationListActive = true;
+      continue;
+    }
+
+    if (token.type === "comma" && relationListActive) {
+      expectingRelation = true;
+      continue;
+    }
+
+    if (!expectingRelation) {
+      continue;
+    }
+
+    if (
+      token.type === "identifier" &&
+      optionalRelationModifiers.has(token.value)
+    ) {
+      continue;
+    }
+
+    if (token.type === "open_paren") {
+      expectingRelation = false;
+      continue;
+    }
+
+    if (token.type !== "identifier") {
+      continue;
+    }
+
+    const next = tokens[index + 1];
+    const nextNext = tokens[index + 2];
+    if (next?.type === "dot" && nextNext?.type === "identifier") {
+      if (!isAllowedSchema(token.value, allowedSchemas)) {
+        throw new Error(
+          `Schema "${token.value}" is not allowed. Allowed schemas: ${allowedSchemas.join(", ")}`
+        );
+      }
+      index += 2;
+    }
+
+    expectingRelation = false;
+  }
+};
+
+export const validateReadOnlySql = (sql: string) => {
+  const normalized = stripTrailingStatementSemicolon(sql);
+  if (!normalized) {
+    throw new Error("SQL must not be empty");
+  }
+
+  const masked = maskSqlCode(normalized);
+  const dangerousMatch = masked.code.match(DANGEROUS_PATTERN);
+  if (dangerousMatch) {
+    throw new Error(
+      `Unsafe SQL keyword detected: ${dangerousMatch[1].toUpperCase()}`
+    );
+  }
+
+  if (masked.semicolonIndexes.length) {
+    throw new Error("Only one SQL statement is allowed");
+  }
+
+  if (!/^(select|with|explain)\b/i.test(masked.code.trim())) {
+    throw new Error("Only SELECT, WITH, and EXPLAIN statements are allowed");
+  }
+
+  if (
+    /^explain\b/i.test(masked.code.trim()) &&
+    /\banalyze\b/i.test(masked.code)
+  ) {
+    throw new Error("EXPLAIN ANALYZE is not allowed");
+  }
+};
+
+export const withMaxRowsLimit = (
+  sql: string,
+  maxRows: number,
+  queryTimeoutMs: number
+) => {
+  const normalized = stripTrailingStatementSemicolon(sql);
+  return [
+    `select /*+ MAX_EXECUTION_TIME(${queryTimeoutMs}) */ * from (`,
+    normalized,
+    `) as mcp_limited_query limit ${maxRows}`
+  ].join("\n");
+};

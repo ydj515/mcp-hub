@@ -12,6 +12,13 @@
       "args": ["-y", "mcp-hub", "stdio", "shortcuts"],
       "env": {}
     },
+    "mcp-hub-mysql": {
+      "command": "npx",
+      "args": ["-y", "mcp-hub", "stdio", "mysql"],
+      "env": {
+        "MYSQL_URL": "${MYSQL_URL}"
+      }
+    },
     "mcp-hub-postgres": {
       "command": "npx",
       "args": ["-y", "mcp-hub", "stdio", "postgres"],
