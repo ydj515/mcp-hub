@@ -2549,6 +2549,7 @@ git commit -m "feat: migrate postgres mcp to typescript"
 - Create: `examples/codex-postgres.config.toml`
 - Create: `examples/cursor-shortcuts.mcp.json`
 - Create: `examples/claude-api-finder.json`
+- Create: `examples/antigravity-postgres.mcp.json`
 - Move: `api-finder-mcp/` to `legacy/api-finder-mcp/`
 - Move: `shortcut-mcp/` to `legacy/shortcut-mcp/`
 - Move: `database/pg-mcp/` to `legacy/database/pg-mcp/`
@@ -2697,6 +2698,22 @@ Create `examples/claude-api-finder.json`:
       "args": ["-y", "mcp-hub", "stdio", "api-finder"],
       "env": {
         "PUBLIC_DATA_API_KEY": "${PUBLIC_DATA_API_KEY}"
+      }
+    }
+  }
+}
+```
+
+Create `examples/antigravity-postgres.mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "mcp-hub-postgres": {
+      "command": "npx",
+      "args": ["-y", "mcp-hub", "stdio", "postgres"],
+      "env": {
+        "DATABASE_URL": "${DATABASE_URL}"
       }
     }
   }
