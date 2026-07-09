@@ -40,6 +40,19 @@ node packages/cli/dist/index.js stdio shortcuts
 node packages/cli/dist/index.js stdio postgres
 ```
 
+프로젝트별 MCP 설정에서 로컬 clone을 직접 가리킬 때는 다음 형태를 사용합니다.
+
+```json
+{
+  "command": "node",
+  "args": [
+    "/Users/dongjin/dev/study/mcp-hub/packages/cli/dist/index.js",
+    "stdio",
+    "shortcuts"
+  ]
+}
+```
+
 npm 배포 후에는 프로젝트별 MCP 설정에서 다음 형태를 권장합니다.
 
 ```json

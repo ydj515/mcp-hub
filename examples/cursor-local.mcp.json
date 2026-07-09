@@ -1,0 +1,35 @@
+{
+  "mcpServers": {
+    "mcp-hub-api-finder": {
+      "command": "node",
+      "args": [
+        "<mcp-hub-repo>/packages/cli/dist/index.js",
+        "stdio",
+        "api-finder"
+      ],
+      "env": {
+        "PUBLIC_DATA_API_KEY": "${PUBLIC_DATA_API_KEY}"
+      }
+    },
+    "mcp-hub-shortcuts": {
+      "command": "node",
+      "args": [
+        "<mcp-hub-repo>/packages/cli/dist/index.js",
+        "stdio",
+        "shortcuts"
+      ],
+      "env": {}
+    },
+    "mcp-hub-postgres": {
+      "command": "node",
+      "args": [
+        "<mcp-hub-repo>/packages/cli/dist/index.js",
+        "stdio",
+        "postgres"
+      ],
+      "env": {
+        "DATABASE_URL": "${DATABASE_URL}"
+      }
+    }
+  }
+}

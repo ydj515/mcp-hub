@@ -1,0 +1,20 @@
+[mcp_servers.mcp_hub_api_finder]
+command = "node"
+args = ["<mcp-hub-repo>/packages/cli/dist/index.js", "stdio", "api-finder"]
+env_vars = ["PUBLIC_DATA_API_KEY"]
+startup_timeout_sec = 20
+tool_timeout_sec = 60
+
+[mcp_servers.mcp_hub_shortcuts]
+command = "node"
+args = ["<mcp-hub-repo>/packages/cli/dist/index.js", "stdio", "shortcuts"]
+env_vars = []
+startup_timeout_sec = 20
+tool_timeout_sec = 60
+
+[mcp_servers.mcp_hub_postgres]
+command = "node"
+args = ["<mcp-hub-repo>/packages/cli/dist/index.js", "stdio", "postgres"]
+env_vars = ["DATABASE_URL"]
+startup_timeout_sec = 20
+tool_timeout_sec = 60

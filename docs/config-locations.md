@@ -6,22 +6,37 @@
 
 | 예시 파일 | 용도 |
 | --- | --- |
-| [`examples/codex-all.config.toml`](../examples/codex-all.config.toml) | Codex용 전체 서버 등록 예시 |
-| [`examples/cursor-all.mcp.json`](../examples/cursor-all.mcp.json) | Cursor용 전체 서버 등록 예시 |
-| [`examples/claude-all.json`](../examples/claude-all.json) | Claude Desktop 및 Claude Code용 전체 서버 등록 예시 |
-| [`examples/antigravity-all.mcp.json`](../examples/antigravity-all.mcp.json) | Antigravity용 전체 서버 등록 예시 |
+| [`examples/codex-all.config.toml`](../examples/codex-all.config.toml) | Codex용 npm/npx 실행 예시 |
+| [`examples/codex-local.config.toml`](../examples/codex-local.config.toml) | Codex용 local clone 실행 예시 |
+| [`examples/cursor-all.mcp.json`](../examples/cursor-all.mcp.json) | Cursor용 npm/npx 실행 예시 |
+| [`examples/cursor-local.mcp.json`](../examples/cursor-local.mcp.json) | Cursor용 local clone 실행 예시 |
+| [`examples/claude-all.json`](../examples/claude-all.json) | Claude Desktop 및 Claude Code용 npm/npx 실행 예시 |
+| [`examples/claude-local.json`](../examples/claude-local.json) | Claude Desktop 및 Claude Code용 local clone 실행 예시 |
+| [`examples/antigravity-all.mcp.json`](../examples/antigravity-all.mcp.json) | Antigravity용 npm/npx 실행 예시 |
+| [`examples/antigravity-local.mcp.json`](../examples/antigravity-local.mcp.json) | Antigravity용 local clone 실행 예시 |
 
 모든 예시는 `api-finder`, `shortcuts`, `postgres` MCP 서버를 함께 등록합니다.
+`*-local.*` 예시는 `<mcp-hub-repo>`를 실제 clone 경로로 바꿔서 사용하세요.
+
+```text
+<mcp-hub-repo>/packages/cli/dist/index.js
+```
+
+이 로컬 머신에서는 다음처럼 바꾸면 됩니다.
+
+```text
+/Users/dongjin/dev/study/mcp-hub/packages/cli/dist/index.js
+```
 
 ## 파일 위치
 
 | 환경 | 예시 파일 | 글로벌 위치 | 프로젝트별 위치 | 실제 파일명 |
 | --- | --- | --- | --- | --- |
-| Codex | [`examples/codex-all.config.toml`](../examples/codex-all.config.toml) | `~/.codex/config.toml` | `<repo>/.codex/config.toml` | `config.toml` |
-| Cursor | [`examples/cursor-all.mcp.json`](../examples/cursor-all.mcp.json) | `~/.cursor/mcp.json` | `<repo>/.cursor/mcp.json` | `mcp.json` |
-| Claude Desktop | [`examples/claude-all.json`](../examples/claude-all.json) | macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`<br>Windows: `%APPDATA%\\Claude\\claude_desktop_config.json` | 지원하지 않음 | `claude_desktop_config.json` |
-| Claude Code | [`examples/claude-all.json`](../examples/claude-all.json) | `~/.claude.json` | `<repo>/.mcp.json` | 글로벌: `.claude.json`<br>프로젝트: `.mcp.json` |
-| Antigravity | [`examples/antigravity-all.mcp.json`](../examples/antigravity-all.mcp.json) | `~/.gemini/config/mcp_config.json` | `<repo>/.agents/settings.json` | 글로벌: `mcp_config.json`<br>프로젝트: `settings.json` |
+| Codex | [`examples/codex-all.config.toml`](../examples/codex-all.config.toml), [`examples/codex-local.config.toml`](../examples/codex-local.config.toml) | `~/.codex/config.toml` | `<repo>/.codex/config.toml` | `config.toml` |
+| Cursor | [`examples/cursor-all.mcp.json`](../examples/cursor-all.mcp.json), [`examples/cursor-local.mcp.json`](../examples/cursor-local.mcp.json) | `~/.cursor/mcp.json` | `<repo>/.cursor/mcp.json` | `mcp.json` |
+| Claude Desktop | [`examples/claude-all.json`](../examples/claude-all.json), [`examples/claude-local.json`](../examples/claude-local.json) | macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`<br>Windows: `%APPDATA%\\Claude\\claude_desktop_config.json` | 지원하지 않음 | `claude_desktop_config.json` |
+| Claude Code | [`examples/claude-all.json`](../examples/claude-all.json), [`examples/claude-local.json`](../examples/claude-local.json) | `~/.claude.json` | `<repo>/.mcp.json` | 글로벌: `.claude.json`<br>프로젝트: `.mcp.json` |
+| Antigravity | [`examples/antigravity-all.mcp.json`](../examples/antigravity-all.mcp.json), [`examples/antigravity-local.mcp.json`](../examples/antigravity-local.mcp.json) | `~/.gemini/config/mcp_config.json` | `<repo>/.agents/settings.json` | 글로벌: `mcp_config.json`<br>프로젝트: `settings.json` |
 
 ## 적용 방식
 
