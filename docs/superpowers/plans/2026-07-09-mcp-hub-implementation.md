@@ -2546,10 +2546,10 @@ git commit -m "feat: migrate postgres mcp to typescript"
 
 **Files:**
 - Modify: `README.md`
-- Create: `examples/codex-postgres.config.toml`
-- Create: `examples/cursor-shortcuts.mcp.json`
-- Create: `examples/claude-api-finder.json`
-- Create: `examples/antigravity-postgres.mcp.json`
+- Create: `examples/codex-all.config.toml`
+- Create: `examples/cursor-all.mcp.json`
+- Create: `examples/claude-all.json`
+- Create: `examples/antigravity-all.mcp.json`
 - Remove: `legacy/`
 
 **Interfaces:**
@@ -2642,7 +2642,16 @@ node packages/cli/dist/index.js init --target claude-desktop --server api-finder
 node packages/cli/dist/index.js init --target antigravity --server postgres --scope user
 ```
 
-`init`은 기본적으로 preview만 출력합니다. 파일 쓰기는 `--write`에서 지원합니다.
+`init`은 현재 preview만 출력합니다. 기존 설정 파일 병합과 `--write` 쓰기는 후속 작업 범위입니다.
+
+## 예시 설정
+
+```text
+examples/codex-all.config.toml
+examples/cursor-all.mcp.json
+examples/claude-all.json
+examples/antigravity-all.mcp.json
+```
 
 ## Postgres 환경 변수
 
@@ -2659,9 +2668,23 @@ PG_POOL_MAX=5
 
 - [ ] **Step 4: examples 작성**
 
-Create `examples/codex-postgres.config.toml`:
+Create `examples/codex-all.config.toml`:
 
 ```toml
+[mcp_servers.mcp_hub_api_finder]
+command = "npx"
+args = ["-y", "mcp-hub", "stdio", "api-finder"]
+env_vars = ["PUBLIC_DATA_API_KEY"]
+startup_timeout_sec = 20
+tool_timeout_sec = 60
+
+[mcp_servers.mcp_hub_shortcuts]
+command = "npx"
+args = ["-y", "mcp-hub", "stdio", "shortcuts"]
+env_vars = []
+startup_timeout_sec = 20
+tool_timeout_sec = 60
+
 [mcp_servers.mcp_hub_postgres]
 command = "npx"
 args = ["-y", "mcp-hub", "stdio", "postgres"]
@@ -2670,21 +2693,7 @@ startup_timeout_sec = 20
 tool_timeout_sec = 60
 ```
 
-Create `examples/cursor-shortcuts.mcp.json`:
-
-```json
-{
-  "mcpServers": {
-    "mcp-hub-shortcuts": {
-      "command": "npx",
-      "args": ["-y", "mcp-hub", "stdio", "shortcuts"],
-      "env": {}
-    }
-  }
-}
-```
-
-Create `examples/claude-api-finder.json`:
+Create `examples/cursor-all.mcp.json`:
 
 ```json
 {
@@ -2695,16 +2704,68 @@ Create `examples/claude-api-finder.json`:
       "env": {
         "PUBLIC_DATA_API_KEY": "${PUBLIC_DATA_API_KEY}"
       }
+    },
+    "mcp-hub-shortcuts": {
+      "command": "npx",
+      "args": ["-y", "mcp-hub", "stdio", "shortcuts"],
+      "env": {}
+    },
+    "mcp-hub-postgres": {
+      "command": "npx",
+      "args": ["-y", "mcp-hub", "stdio", "postgres"],
+      "env": {
+        "DATABASE_URL": "${DATABASE_URL}"
+      }
     }
   }
 }
 ```
 
-Create `examples/antigravity-postgres.mcp.json`:
+Create `examples/claude-all.json`:
 
 ```json
 {
   "mcpServers": {
+    "mcp-hub-api-finder": {
+      "command": "npx",
+      "args": ["-y", "mcp-hub", "stdio", "api-finder"],
+      "env": {
+        "PUBLIC_DATA_API_KEY": "${PUBLIC_DATA_API_KEY}"
+      }
+    },
+    "mcp-hub-shortcuts": {
+      "command": "npx",
+      "args": ["-y", "mcp-hub", "stdio", "shortcuts"],
+      "env": {}
+    },
+    "mcp-hub-postgres": {
+      "command": "npx",
+      "args": ["-y", "mcp-hub", "stdio", "postgres"],
+      "env": {
+        "DATABASE_URL": "${DATABASE_URL}"
+      }
+    }
+  }
+}
+```
+
+Create `examples/antigravity-all.mcp.json`:
+
+```json
+{
+  "mcpServers": {
+    "mcp-hub-api-finder": {
+      "command": "npx",
+      "args": ["-y", "mcp-hub", "stdio", "api-finder"],
+      "env": {
+        "PUBLIC_DATA_API_KEY": "${PUBLIC_DATA_API_KEY}"
+      }
+    },
+    "mcp-hub-shortcuts": {
+      "command": "npx",
+      "args": ["-y", "mcp-hub", "stdio", "shortcuts"],
+      "env": {}
+    },
     "mcp-hub-postgres": {
       "command": "npx",
       "args": ["-y", "mcp-hub", "stdio", "postgres"],

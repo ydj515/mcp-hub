@@ -63,10 +63,10 @@ node packages/cli/dist/index.js init --target antigravity --server postgres --sc
 ## 예시 설정
 
 ```text
-examples/codex-postgres.config.toml
-examples/cursor-shortcuts.mcp.json
-examples/claude-api-finder.json
-examples/antigravity-postgres.mcp.json
+examples/codex-all.config.toml
+examples/cursor-all.mcp.json
+examples/claude-all.json
+examples/antigravity-all.mcp.json
 ```
 
 ## Postgres 환경 변수
