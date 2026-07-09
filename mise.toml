@@ -1,2 +1,22 @@
 [tools]
 node = "24.13.0"
+
+[tasks.check]
+description = "Run the standard quality gate: typecheck and tests."
+depends = ["typecheck", "test"]
+
+[tasks.build]
+description = "Compile all npm workspaces with TypeScript."
+run = "npm run build"
+
+[tasks.typecheck]
+description = "Run TypeScript project reference type checks."
+run = "npm run typecheck"
+
+[tasks.test]
+description = "Run the Vitest suite once."
+run = "npm run test"
+
+[tasks."test:watch"]
+description = "Run Vitest in watch mode."
+run = "npm run test:watch"
