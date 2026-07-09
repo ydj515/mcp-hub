@@ -36,7 +36,7 @@
 | Cursor | [`examples/cursor-all.mcp.json`](../examples/cursor-all.mcp.json), [`examples/cursor-local.mcp.json`](../examples/cursor-local.mcp.json) | `~/.cursor/mcp.json` | `<repo>/.cursor/mcp.json` | `mcp.json` |
 | Claude Desktop | [`examples/claude-all.json`](../examples/claude-all.json), [`examples/claude-local.json`](../examples/claude-local.json) | macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`<br>Windows: `%APPDATA%\\Claude\\claude_desktop_config.json` | 지원하지 않음 | `claude_desktop_config.json` |
 | Claude Code | [`examples/claude-all.json`](../examples/claude-all.json), [`examples/claude-local.json`](../examples/claude-local.json) | `~/.claude.json` | `<repo>/.mcp.json` | 글로벌: `.claude.json`<br>프로젝트: `.mcp.json` |
-| Antigravity | [`examples/antigravity-all.mcp.json`](../examples/antigravity-all.mcp.json), [`examples/antigravity-local.mcp.json`](../examples/antigravity-local.mcp.json) | `~/.gemini/config/mcp_config.json` | `<repo>/.agents/settings.json` | 글로벌: `mcp_config.json`<br>프로젝트: `settings.json` |
+| Antigravity | [`examples/antigravity-all.mcp.json`](../examples/antigravity-all.mcp.json), [`examples/antigravity-local.mcp.json`](../examples/antigravity-local.mcp.json) | `~/.gemini/config/mcp_config.json` | `<repo>/.agents/settings.json` | 글로벌: `mcp_config.json`<br>프로젝트: `mcp_config.json` |
 
 ## 적용 방식
 
