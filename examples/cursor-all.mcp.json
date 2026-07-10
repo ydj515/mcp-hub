@@ -25,6 +25,15 @@
       "env": {
         "POSTGRESQL_URL": "${POSTGRESQL_URL}"
       }
+    },
+    "mcp-hub-gitlab": {
+      "command": "npx",
+      "args": ["-y", "mcp-hub", "stdio", "gitlab"],
+      "env": {
+        "GITLAB_TOKEN": "${GITLAB_TOKEN}",
+        "GITLAB_URL": "${GITLAB_URL}",
+        "GITLAB_ENABLE_WRITE_TOOLS": "${GITLAB_ENABLE_WRITE_TOOLS}"
+      }
     }
   }
 }

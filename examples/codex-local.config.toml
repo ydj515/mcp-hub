@@ -25,3 +25,10 @@ args = ["<mcp-hub-repo>/packages/cli/dist/index.js", "stdio", "postgres"]
 env_vars = ["POSTGRESQL_URL"]
 startup_timeout_sec = 20
 tool_timeout_sec = 60
+
+[mcp_servers.mcp_hub_gitlab]
+command = "node"
+args = ["<mcp-hub-repo>/packages/cli/dist/index.js", "stdio", "gitlab"]
+env_vars = ["GITLAB_TOKEN", "GITLAB_URL", "GITLAB_ENABLE_WRITE_TOOLS"]
+startup_timeout_sec = 20
+tool_timeout_sec = 60

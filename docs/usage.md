@@ -30,6 +30,7 @@ node packages/cli/dist/index.js list
 | `shortcuts` | macOS/Windows 단축키 카테고리와 검색 |
 | `mysql` | MySQL 읽기 전용 introspection과 쿼리 실행 |
 | `postgres` | PostgreSQL 읽기 전용 introspection과 쿼리 실행 |
+| `gitlab` | GitLab.com 및 self-hosted GitLab 프로젝트, 이슈, MR 조회 |
 
 ## 로컬 stdio 실행
 
@@ -40,6 +41,7 @@ node packages/cli/dist/index.js stdio api-finder
 node packages/cli/dist/index.js stdio shortcuts
 node packages/cli/dist/index.js stdio mysql
 node packages/cli/dist/index.js stdio postgres
+node packages/cli/dist/index.js stdio gitlab
 ```
 
 프로젝트별 MCP 설정에서 로컬 clone을 직접 가리킬 때는 다음 형태를 사용합니다.
@@ -64,7 +66,7 @@ npm 배포 후에는 프로젝트별 MCP 설정에서 다음 형태를 권장합
 }
 ```
 
-서버 id만 바꾸면 `api-finder`, `shortcuts`, `mysql`, `postgres`를 같은 방식으로 등록할 수 있습니다.
+서버 id만 바꾸면 `api-finder`, `shortcuts`, `mysql`, `postgres`, `gitlab`을 같은 방식으로 등록할 수 있습니다.
 
 ## Streamable HTTP 실행
 
@@ -98,6 +100,7 @@ http://localhost:3333/mcp/api-finder
 http://localhost:3333/mcp/shortcuts
 http://localhost:3333/mcp/mysql
 http://localhost:3333/mcp/postgres
+http://localhost:3333/mcp/gitlab
 ```
 
 단일 서버를 실행하는 경우에는 `/mcp`와 `/mcp/<server-id>`를 함께 사용할 수 있습니다.
@@ -154,10 +157,46 @@ MYSQL_POOL_LIMIT=5
 
 `shortcuts`는 별도 환경 변수가 필요 없습니다.
 
+`gitlab`은 GitLab access token이 필요합니다. GitLab.com은 `GITLAB_URL`을 생략할 수 있고, self-hosted GitLab은 instance URL을 지정합니다.
+
+```text
+GITLAB_TOKEN=...
+GITLAB_URL=https://gitlab.example.com
+GITLAB_AUTH_MODE=private-token
+GITLAB_ENABLE_WRITE_TOOLS=false
+GITLAB_MAX_PER_PAGE=50
+GITLAB_MAX_FILE_BYTES=1048576
+GITLAB_TIMEOUT_MS=10000
+```
+
+기본 제공 GitLab tool은 다음과 같습니다.
+
+```text
+get_current_user
+search_projects
+get_project
+list_issues
+get_issue
+list_merge_requests
+get_merge_request
+list_project_branches
+list_commits
+get_file
+list_pipelines
+get_pipeline_jobs
+create_issue
+create_merge_request
+create_issue_note
+create_merge_request_note
+approve_merge_request
+merge_merge_request
+```
+
 > `postgres` 서버는 읽기 전용 DB 계정으로 실행하는 것을 권장합니다.
 > `ALLOWED_SCHEMAS`를 지정하면 노출할 schema 범위를 줄일 수 있습니다.
 > `mysql` 서버도 읽기 전용 DB 계정으로 실행하는 것을 권장합니다.
 > `MYSQL_ALLOWED_SCHEMAS`를 지정하면 노출할 schema 범위를 줄일 수 있습니다.
+> `gitlab` 서버의 create/comment/approve/merge tool은 `GITLAB_ENABLE_WRITE_TOOLS=true`일 때만 실행됩니다. self-hosted instance가 relative URL 아래에 있으면 `GITLAB_URL=https://example.com/gitlab`처럼 지정하세요.
 
 ## 배포 후 사용 흐름
 

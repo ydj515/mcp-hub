@@ -17,6 +17,9 @@ export MCP_HUB_TOKEN="$(openssl rand -base64 32)"
 export PUBLIC_DATA_API_KEY="..."
 export POSTGRESQL_URL="postgresql://readonly:password@localhost:5432/app"
 export MYSQL_URL="mysql://readonly:password@localhost:3306/app"
+export GITLAB_TOKEN="..."
+export GITLAB_URL="https://gitlab.example.com"
+export GITLAB_ENABLE_WRITE_TOOLS="false"
 
 node packages/cli/dist/index.js serve all \
   --host 0.0.0.0 \
@@ -35,6 +38,7 @@ https://mcp.example.com/mcp/api-finder
 https://mcp.example.com/mcp/shortcuts
 https://mcp.example.com/mcp/mysql
 https://mcp.example.com/mcp/postgres
+https://mcp.example.com/mcp/gitlab
 ```
 
 단일 서버를 실행하면 `/mcp`와 `/mcp/<server-id>`를 함께 사용할 수 있습니다.
@@ -68,7 +72,7 @@ curl -H "Authorization: Bearer $MCP_HUB_TOKEN" \
 
 ## 클라이언트 설정
 
-클라이언트 PC에는 DB URL이나 공공데이터 API key를 둘 필요가 없습니다. remote MCP server에만 `POSTGRESQL_URL`, `MYSQL_URL`, `PUBLIC_DATA_API_KEY`를 두고, 클라이언트에는 remote URL과 `MCP_HUB_TOKEN`만 설정합니다.
+클라이언트 PC에는 DB URL, 공공데이터 API key, GitLab token을 둘 필요가 없습니다. remote MCP server에만 `POSTGRESQL_URL`, `MYSQL_URL`, `PUBLIC_DATA_API_KEY`, `GITLAB_TOKEN`, `GITLAB_URL`을 두고, 클라이언트에는 remote URL과 `MCP_HUB_TOKEN`만 설정합니다.
 
 ```bash
 export MCP_HUB_TOKEN="remote-server와-같은-토큰"
@@ -98,6 +102,7 @@ export MCP_HUB_TOKEN="remote-server와-같은-토큰"
 - public internet에 노출할 때는 HTTPS 없이 직접 열지 않습니다.
 - `MCP_HUB_TOKEN`은 repo나 공유 설정 파일에 직접 적지 않고 환경 변수로 둡니다.
 - `postgres`, `mysql`은 읽기 전용 DB 계정을 사용합니다.
+- `gitlab`은 필요한 scope만 가진 access token을 사용하고, self-hosted instance는 `GITLAB_URL`로 명시합니다. create/comment/approve/merge tool은 `GITLAB_ENABLE_WRITE_TOOLS=true`일 때만 실행됩니다.
 - `ALLOWED_SCHEMAS`, `MYSQL_ALLOWED_SCHEMAS`, row limit, query timeout을 설정해 노출 범위를 줄입니다.
 - 필요하면 endpoint별로 별도 토큰을 적용할 수 있도록 reverse proxy layer에서 추가 인증을 둡니다.
 

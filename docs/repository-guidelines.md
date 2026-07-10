@@ -2,7 +2,7 @@
 
 ## 프로젝트 구조와 모듈 구성
 
-이 레포지토리는 MCP Hub를 위한 Node/TypeScript npm workspace입니다. 소스 코드는 `packages/` 아래에 있습니다. `packages/core`는 공통 서버 정의, 설정 adapter, transport, HTTP helper를 담고, `packages/cli`는 `mcp-hub` CLI를 제공합니다. 개별 MCP 서버는 `packages/servers/*`에 있으며 현재 `api-finder`, `shortcuts`, `mysql`, `postgres`가 포함됩니다. MCP 서버의 `src/` 계층은 [서버 패키지 구조](server-package-structure.md)를 따릅니다. 테스트는 구현 파일 가까이에 `*.test.ts` 이름으로 둡니다. 사용자 문서는 `docs/`, 실행 가능한 클라이언트 예시는 `examples/`에 둡니다.
+이 레포지토리는 MCP Hub를 위한 Node/TypeScript npm workspace입니다. 소스 코드는 `packages/` 아래에 있습니다. `packages/core`는 공통 서버 정의, 설정 adapter, transport, HTTP helper를 담고, `packages/cli`는 `mcp-hub` CLI를 제공합니다. 개별 MCP 서버는 `packages/servers/*`에 있으며 현재 `api-finder`, `shortcuts`, `mysql`, `postgres`, `gitlab`이 포함됩니다. MCP 서버의 `src/` 계층은 [서버 패키지 구조](server-package-structure.md)를 따릅니다. 테스트는 구현 파일 가까이에 `*.test.ts` 이름으로 둡니다. 사용자 문서는 `docs/`, 실행 가능한 클라이언트 예시는 `examples/`에 둡니다.
 
 ## 빌드, 테스트, 개발 명령
 
@@ -32,4 +32,4 @@ TypeScript strict mode, ES modules, `NodeNext` module resolution을 기준으로
 
 ## 보안과 설정 팁
 
-`.env`, credential, log, 로컬 editor 설정은 커밋하지 않습니다. `postgres` 서버는 읽기 전용 DB 계정 사용을 권장합니다. `POSTGRESQL_URL`, `ALLOWED_SCHEMAS`, row/query limit은 신중하게 설정하세요. remote HTTP serving을 사용할 때는 `--host`와 인증 관련 옵션을 명확히 지정합니다.
+`.env`, credential, log, 로컬 editor 설정은 커밋하지 않습니다. `postgres` 서버는 읽기 전용 DB 계정 사용을 권장합니다. `POSTGRESQL_URL`, `ALLOWED_SCHEMAS`, row/query limit은 신중하게 설정하세요. `gitlab` write tool은 `GITLAB_ENABLE_WRITE_TOOLS=true`가 필요하므로 토큰 scope와 대상 instance를 검토하세요. remote HTTP serving을 사용할 때는 `--host`와 인증 관련 옵션을 명확히 지정합니다.

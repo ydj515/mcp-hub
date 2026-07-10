@@ -19,7 +19,7 @@
 | [`examples/antigravity-local.mcp.json`](../examples/antigravity-local.mcp.json) | Antigravity용 local clone 실행 예시 |
 | [`examples/antigravity-remote.mcp.json`](../examples/antigravity-remote.mcp.json) | Antigravity용 remote HTTP 실행 예시 |
 
-모든 예시는 `api-finder`, `shortcuts`, `mysql`, `postgres` MCP 서버를 함께 등록합니다.
+모든 예시는 `api-finder`, `shortcuts`, `mysql`, `postgres`, `gitlab` MCP 서버를 함께 등록합니다.
 `*-local.*` 예시는 `<mcp-hub-repo>`를 실제 clone 경로로 바꿔서 사용하세요.
 `*-remote.*` 예시는 `https://mcp.example.com`을 실제 remote MCP server domain으로 바꾸고, 클라이언트 환경에 `MCP_HUB_TOKEN`을 설정하세요.
 
@@ -59,12 +59,15 @@
 
 ## 환경 변수
 
-로컬 stdio 방식에서 `api-finder`, `mysql`, `postgres`는 실행 환경에 다음 변수가 필요합니다.
+로컬 stdio 방식에서 `api-finder`, `mysql`, `postgres`, `gitlab`은 실행 환경에 다음 변수가 필요합니다.
 
 ```text
 PUBLIC_DATA_API_KEY
 MYSQL_URL
 POSTGRESQL_URL
+GITLAB_TOKEN
+GITLAB_URL
+GITLAB_ENABLE_WRITE_TOOLS
 ```
 
 remote HTTP 방식에서는 위 변수들을 remote MCP server 프로세스 쪽에만 설정합니다. 클라이언트 PC에는 다음 토큰만 설정합니다.

@@ -1,6 +1,6 @@
 # MCP Hub 예시 설정
 
-이 디렉터리는 `api-finder`, `shortcuts`, `mysql`, `postgres` MCP 서버를 모두 등록하는 예시 설정을 제공합니다.
+이 디렉터리는 `api-finder`, `shortcuts`, `mysql`, `postgres`, `gitlab` MCP 서버를 모두 등록하는 예시 설정을 제공합니다.
 
 `*-all.*` 파일은 npm 배포 후 `npx -y mcp-hub`로 실행하는 예시입니다.
 `*-local.*` 파일은 이 레포를 clone/build한 뒤 `node <mcp-hub-repo>/packages/cli/dist/index.js`로 실행하는 예시입니다.

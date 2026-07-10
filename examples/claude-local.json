@@ -37,6 +37,15 @@
       "env": {
         "POSTGRESQL_URL": "${POSTGRESQL_URL}"
       }
+    },
+    "mcp-hub-gitlab": {
+      "command": "node",
+      "args": ["<mcp-hub-repo>/packages/cli/dist/index.js", "stdio", "gitlab"],
+      "env": {
+        "GITLAB_TOKEN": "${GITLAB_TOKEN}",
+        "GITLAB_URL": "${GITLAB_URL}",
+        "GITLAB_ENABLE_WRITE_TOOLS": "${GITLAB_ENABLE_WRITE_TOOLS}"
+      }
     }
   }
 }
