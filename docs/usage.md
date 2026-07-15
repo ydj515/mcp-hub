@@ -146,6 +146,8 @@ ALLOWED_SCHEMAS=public
 MAX_ROWS=500
 QUERY_TIMEOUT_MS=10000
 PG_POOL_MAX=5
+POSTGRES_ENABLE_WRITE_TOOLS=false
+POSTGRES_ENABLE_DIAGNOSTIC_TOOLS=false
 ```
 
 `mysql`은 데이터베이스 연결 정보가 필요합니다.
@@ -156,7 +158,45 @@ MYSQL_ALLOWED_SCHEMAS=app
 MYSQL_MAX_ROWS=500
 MYSQL_QUERY_TIMEOUT_MS=10000
 MYSQL_POOL_LIMIT=5
+MYSQL_ENABLE_WRITE_TOOLS=false
+MYSQL_ENABLE_DIAGNOSTIC_TOOLS=false
 ```
+
+MySQL과 PostgreSQL은 공통으로 다음 구조·진단 tool을 제공합니다.
+
+```text
+get_server_capabilities
+get_indexes
+get_constraints
+get_partitions
+get_table_size
+get_table_stats
+list_database_objects
+list_active_queries
+get_locks
+```
+
+`get_indexes`, `get_constraints`, `get_partitions`, `get_table_size`, `get_table_stats`는
+`schema`와 `table_name`을 받습니다. `list_database_objects`는 table, view, trigger,
+routine 등 schema 객체를 반환하며, `list_active_queries`와 `get_locks`는 기본 50개,
+최대 100개까지 반환합니다. 활성 쿼리 SQL은 1,000자로 잘립니다. `list_active_queries`와
+`get_locks`는 기본 비활성이며, 개발·로컬 DB에서만 DB별 `*_ENABLE_DIAGNOSTIC_TOOLS=true`를
+설정해 활성화합니다.
+
+PostgreSQL은 추가로 다음 tool을 제공합니다.
+
+```text
+get_index_usage
+```
+
+`get_index_usage`는 `pg_stat_user_indexes`의 누적 scan/tuple 통계를 반환하며, 통계 초기화
+시점과 배치성 워크로드를 함께 검토한 후에만 인덱스 제거 판단에 사용해야 합니다.
+
+고급 메타데이터 tool은 MySQL 8.0+와 PostgreSQL 11+을 기준으로 구현했습니다. MySQL
+`get_indexes`는 `EXPRESSION`, `IS_VISIBLE` column이 없는 서버에서 호환 projection으로
+재시도하지만, `get_locks`는 MySQL 8.0의 Performance Schema가 필요합니다. PostgreSQL
+`get_locks`는 허용 schema에 속한 relation lock만 반환하므로 transaction ID, virtual XID,
+advisory lock은 범위에 포함하지 않습니다.
 
 `redis`는 `REDIS_MODE`에 따라 standalone, Cluster, Sentinel 연결을 선택합니다. 기본값은 standalone이며 모든 도구는 조회 전용입니다.
 
@@ -243,10 +283,14 @@ approve_merge_request
 merge_merge_request
 ```
 
-> `postgres` 서버는 읽기 전용 DB 계정으로 실행하는 것을 권장합니다.
+> `postgres` 서버는 기본적으로 읽기 전용입니다. 개발·로컬 DB에서만 `POSTGRES_ENABLE_WRITE_TOOLS=true`로 `run_write_query`를 활성화하세요. 이 도구는 한 SQL statement로 DML, index, partition, 통계·maintenance 명령을 실행하지만 `DROP TABLE`, `TRUNCATE`, database/schema 제거, 권한·역할 변경은 거부합니다.
 > `ALLOWED_SCHEMAS`를 지정하면 노출할 schema 범위를 줄일 수 있습니다.
-> `mysql` 서버도 읽기 전용 DB 계정으로 실행하는 것을 권장합니다.
+> PostgreSQL의 `list_active_queries`, `get_locks`, `get_index_usage`는 각각 `pg_stat_activity`, `pg_locks`, `pg_stat_user_indexes` 접근 권한과 통계 수집 상태에 따라 보이는 범위가 달라집니다. 활성 쿼리와 잠금 응답에는 SQL 텍스트와 사용자·세션 정보가 포함될 수 있습니다.
+> PostgreSQL의 `list_active_queries`, `get_locks`는 `POSTGRES_ENABLE_DIAGNOSTIC_TOOLS=true`일 때만 실행됩니다. `get_locks`는 allowlist 경계를 유지하기 위해 relation lock만 반환합니다.
+> `mysql` 서버도 기본적으로 읽기 전용입니다. 개발·로컬 DB에서만 `MYSQL_ENABLE_WRITE_TOOLS=true`로 `run_write_query`를 활성화하세요. 이 도구는 한 SQL statement로 DML, index, partition, 통계·maintenance 명령을 실행하지만 `DROP TABLE`, `TRUNCATE`, database/schema 제거, 권한·역할 변경은 거부합니다.
 > `MYSQL_ALLOWED_SCHEMAS`를 지정하면 노출할 schema 범위를 줄일 수 있습니다.
+> MySQL의 `get_locks`는 MySQL 8.0의 `performance_schema.data_locks` 접근이 필요합니다. `list_active_queries`는 PROCESS 권한이 없으면 다른 세션을 모두 볼 수 없으며, 두 tool의 응답에는 SQL 텍스트와 연결 메타데이터가 포함될 수 있습니다.
+> MySQL의 `list_active_queries`, `get_locks`는 `MYSQL_ENABLE_DIAGNOSTIC_TOOLS=true`일 때만 실행됩니다. `list_active_queries`는 현재 database가 허용 schema인 세션만 대상으로 하지만, SQL 본문에 schema-qualified relation이나 리터럴이 포함될 수 있습니다.
 > `redis` 서버는 쓰기·삭제·Lua·범용 명령 실행 도구를 제공하지 않지만, Redis ACL도 조회 명령만 허용하도록 별도로 구성해야 합니다.
 > `get_client_list`, `get_slowlog`, `get_topology_status` 응답에는 연결 주소, 키 이름 또는 명령 인자가 포함될 수 있으므로 remote MCP 접근 범위를 제한하세요.
 > `gitlab` 서버의 create/comment/approve/merge tool은 `GITLAB_ENABLE_WRITE_TOOLS=true`일 때만 실행됩니다. self-hosted instance가 relative URL 아래에 있으면 `GITLAB_URL=https://example.com/gitlab`처럼 지정하세요.

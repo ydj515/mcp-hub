@@ -1,5 +1,9 @@
 const DANGEROUS_PATTERN =
   /\b(DROP|DELETE|TRUNCATE|ALTER|CREATE|INSERT|UPDATE|GRANT|REVOKE|COPY|EXECUTE|DO|CALL|SET\s+ROLE|SET\s+SESSION)\b/i;
+const WRITE_PREFIX =
+  /^(insert|update|delete|merge|create\s+(table|index)|drop\s+index|alter\s+table|analyze|vacuum|reindex)\b/i;
+const FORBIDDEN_WRITE_PATTERN =
+  /\b(drop\s+(table|database|schema)|truncate|grant|revoke|create\s+(user|role)|alter\s+(user|role))\b/i;
 
 type MaskedSql = {
   code: string;
@@ -360,15 +364,29 @@ export const validateReadOnlySql = (sql: string) => {
     throw new Error("Only one SQL statement is allowed");
   }
 
-  if (!/^(select|with|explain)\b/i.test(masked.code.trim())) {
-    throw new Error("Only SELECT, WITH, and EXPLAIN statements are allowed");
+  if (!/^(select|with)\b/i.test(masked.code.trim())) {
+    throw new Error("Only SELECT and WITH statements are allowed");
+  }
+};
+
+export const validatePostgresWriteSql = (sql: string) => {
+  let normalized: string;
+  try {
+    normalized = stripTrailingStatementSemicolon(sql);
+  } catch {
+    throw new Error("PostgreSQL write statement is not allowed");
   }
 
+  if (!normalized) {
+    throw new Error("PostgreSQL write statement is not allowed");
+  }
+
+  const masked = maskSqlCode(normalized);
   if (
-    /^explain\b/i.test(masked.code.trim()) &&
-    /\banalyze\b/i.test(masked.code)
+    !WRITE_PREFIX.test(masked.code.trim()) ||
+    FORBIDDEN_WRITE_PATTERN.test(masked.code)
   ) {
-    throw new Error("EXPLAIN ANALYZE is not allowed");
+    throw new Error("PostgreSQL write statement is not allowed");
   }
 };
 

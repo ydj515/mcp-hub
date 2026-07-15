@@ -12,8 +12,28 @@ describe("loadPostgresConfig", () => {
       allowedSchemas: ["public"],
       maxRows: 500,
       queryTimeoutMs: 10000,
-      poolMax: 5
+      poolMax: 5,
+      enableWriteTools: false,
+      enableDiagnosticTools: false
     });
+  });
+
+  it("enables write tools explicitly", () => {
+    const config = loadPostgresConfig({
+      POSTGRESQL_URL: "postgresql://writer:pw@localhost:5432/app",
+      POSTGRES_ENABLE_WRITE_TOOLS: "true"
+    });
+
+    expect(config.enableWriteTools).toBe(true);
+  });
+
+  it("enables diagnostic tools explicitly", () => {
+    const config = loadPostgresConfig({
+      POSTGRESQL_URL: "postgresql://readonly:pw@localhost:5432/app",
+      POSTGRES_ENABLE_DIAGNOSTIC_TOOLS: "true"
+    });
+
+    expect(config.enableDiagnosticTools).toBe(true);
   });
 
   it("throws when POSTGRESQL_URL is missing", () => {

@@ -4,7 +4,12 @@ export type MySqlConfig = {
   maxRows: number;
   queryTimeoutMs: number;
   poolLimit: number;
+  enableWriteTools: boolean;
+  enableDiagnosticTools: boolean;
 };
+
+const parseBoolean = (value: string | undefined) =>
+  value?.toLowerCase() === "true";
 
 const parsePositiveInteger = (
   value: string | undefined,
@@ -58,6 +63,8 @@ export const loadMySqlConfig = (env: NodeJS.ProcessEnv): MySqlConfig => {
       env.MYSQL_POOL_LIMIT,
       5,
       "MYSQL_POOL_LIMIT"
-    )
+    ),
+    enableWriteTools: parseBoolean(env.MYSQL_ENABLE_WRITE_TOOLS),
+    enableDiagnosticTools: parseBoolean(env.MYSQL_ENABLE_DIAGNOSTIC_TOOLS)
   };
 };

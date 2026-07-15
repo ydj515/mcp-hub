@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   validateAllowedSchemas,
+  validatePostgresWriteSql,
   validateReadOnlySql,
   withMaxRowsLimit
 } from "./safety.js";
@@ -44,7 +45,45 @@ describe("validateReadOnlySql", () => {
 
   it("rejects non-read statements", () => {
     expect(() => validateReadOnlySql("show search_path")).toThrow(
-      "Only SELECT, WITH, and EXPLAIN statements are allowed"
+      "Only SELECT and WITH statements are allowed"
+    );
+  });
+
+  it("rejects EXPLAIN statements", () => {
+    expect(() => validateReadOnlySql("explain select * from users")).toThrow(
+      "Only SELECT and WITH statements are allowed"
+    );
+  });
+});
+
+describe("validatePostgresWriteSql", () => {
+  it.each([
+    "insert into users (name) values ('A')",
+    "update users set name = 'B' where id = 1",
+    "update users set role = 'admin' where id = 1",
+    "delete from users where id = 1",
+    "merge into users using staged_users on false when not matched then insert (name) values ('A')",
+    "create table users_2026 partition of users for values from ('2026-01-01') to ('2027-01-01')",
+    "create index concurrently idx_users_name on users (name)",
+    "drop index concurrently idx_users_name",
+    "alter table users attach partition users_2026 for values from ('2026-01-01') to ('2027-01-01')",
+    "analyze users",
+    "vacuum analyze users",
+    "reindex table concurrently users"
+  ])("allows supported PostgreSQL write statement: %s", (sql) => {
+    expect(() => validatePostgresWriteSql(sql)).not.toThrow();
+  });
+
+  it.each([
+    "drop table users",
+    "truncate users",
+    "drop database app",
+    "drop schema public",
+    "create role app_admin",
+    "select 1; delete from users"
+  ])("rejects forbidden PostgreSQL write statement: %s", (sql) => {
+    expect(() => validatePostgresWriteSql(sql)).toThrow(
+      "PostgreSQL write statement is not allowed"
     );
   });
 });

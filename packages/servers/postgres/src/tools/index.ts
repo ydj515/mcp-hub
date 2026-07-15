@@ -2,12 +2,20 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { PostgresConfig } from "../config.js";
 import type { PostgresDatabase } from "../services/database.js";
 import {
+  activityParameter,
+  indexUsageParameter,
   queryParameter,
   schemaParameter,
+  schemaActivityParameter,
   tableParameter,
+  writeQueryParameter,
+  type ActivityParameter,
+  type IndexUsageParameter,
   type QueryParameter,
+  type SchemaActivityParameter,
   type SchemaParameter,
-  type TableParameter
+  type TableParameter,
+  type WriteQueryParameter
 } from "./schemas.js";
 
 const validateSchema = (schema: string, config: PostgresConfig) => {
@@ -18,7 +26,30 @@ const validateSchema = (schema: string, config: PostgresConfig) => {
   }
 };
 
+const defaultSchema = (config: PostgresConfig) => config.allowedSchemas[0];
+
+const assertWriteToolsEnabled = (config: PostgresConfig) => {
+  if (!config.enableWriteTools) {
+    throw new Error(
+      "PostgreSQL write tools are disabled. Set POSTGRES_ENABLE_WRITE_TOOLS=true to enable run_write_query."
+    );
+  }
+};
+
+const assertDiagnosticToolsEnabled = (config: PostgresConfig) => {
+  if (!config.enableDiagnosticTools) {
+    throw new Error(
+      "PostgreSQL diagnostic tools are disabled. Set POSTGRES_ENABLE_DIAGNOSTIC_TOOLS=true to enable list_active_queries and get_locks."
+    );
+  }
+};
+
 const jsonText = (value: unknown) => JSON.stringify(value, null, 2);
+
+const toolResult = (payload: Record<string, unknown>) => ({
+  content: [{ type: "text" as const, text: jsonText(payload) }],
+  structuredContent: payload
+});
 
 export const registerPostgresTools = (
   server: McpServer,
@@ -32,7 +63,7 @@ export const registerPostgresTools = (
       description: "List tables in an allowed PostgreSQL schema.",
       inputSchema: schemaParameter.shape
     },
-    async ({ schema = "public" }: SchemaParameter) => {
+    async ({ schema = defaultSchema(config) }: SchemaParameter) => {
       validateSchema(schema, config);
       const tables = await db.listTables(schema);
       return {
@@ -54,7 +85,7 @@ export const registerPostgresTools = (
       description: "Describe columns for a PostgreSQL table.",
       inputSchema: tableParameter.shape
     },
-    async ({ schema = "public", table_name }: TableParameter) => {
+    async ({ schema = defaultSchema(config), table_name }: TableParameter) => {
       validateSchema(schema, config);
       const columns = await db.describeTable(schema, table_name);
       return {
@@ -99,13 +130,182 @@ export const registerPostgresTools = (
   );
 
   server.registerTool(
+    "run_write_query",
+    {
+      title: "Run Write Query",
+      description:
+        "Run one permitted PostgreSQL DML or maintenance statement. Requires POSTGRES_ENABLE_WRITE_TOOLS=true.",
+      inputSchema: writeQueryParameter.shape
+    },
+    async ({ sql }: WriteQueryParameter) => {
+      assertWriteToolsEnabled(config);
+      const result = await db.runWriteQuery(sql);
+      const payload = {
+        command: result.command,
+        affected_rows: result.affectedRows,
+        row_count: result.rows.length,
+        rows: result.rows
+      };
+      return {
+        content: [{ type: "text", text: jsonText(payload) }],
+        structuredContent: payload
+      };
+    }
+  );
+
+  server.registerTool(
+    "get_server_capabilities",
+    {
+      title: "Get Server Capabilities",
+      description:
+        "Return PostgreSQL version, current database, encoding, and installed extensions."
+    },
+    async () => {
+      const capabilities = await db.getServerCapabilities();
+      return toolResult({ capabilities });
+    }
+  );
+
+  server.registerTool(
+    "get_indexes",
+    {
+      title: "Get Indexes",
+      description:
+        "List PostgreSQL index definitions, key parts, access methods, uniqueness, validity, predicates, and INCLUDE columns for a table.",
+      inputSchema: tableParameter.shape
+    },
+    async ({ schema = defaultSchema(config), table_name }: TableParameter) => {
+      validateSchema(schema, config);
+      const indexes = await db.getIndexes(schema, table_name);
+      return toolResult({ table: `${schema}.${table_name}`, indexes });
+    }
+  );
+
+  server.registerTool(
+    "get_constraints",
+    {
+      title: "Get Constraints",
+      description:
+        "List PostgreSQL primary key, unique, foreign key, and check constraints for a table.",
+      inputSchema: tableParameter.shape
+    },
+    async ({ schema = defaultSchema(config), table_name }: TableParameter) => {
+      validateSchema(schema, config);
+      const constraints = await db.getConstraints(schema, table_name);
+      return toolResult({ table: `${schema}.${table_name}`, constraints });
+    }
+  );
+
+  server.registerTool(
+    "get_partitions",
+    {
+      title: "Get Partitions",
+      description:
+        "List all PostgreSQL descendant partitions, partition key, parent, boundary, and tree depth for a table.",
+      inputSchema: tableParameter.shape
+    },
+    async ({ schema = defaultSchema(config), table_name }: TableParameter) => {
+      validateSchema(schema, config);
+      const partitions = await db.getPartitions(schema, table_name);
+      return toolResult({ table: `${schema}.${table_name}`, partitions });
+    }
+  );
+
+  server.registerTool(
+    "get_table_size",
+    {
+      title: "Get Table Size",
+      description:
+        "Return PostgreSQL estimated rows and table, index, and total relation sizes in bytes and readable units.",
+      inputSchema: tableParameter.shape
+    },
+    async ({ schema = defaultSchema(config), table_name }: TableParameter) => {
+      validateSchema(schema, config);
+      const size = await db.getTableSize(schema, table_name);
+      return toolResult({ table: `${schema}.${table_name}`, size });
+    }
+  );
+
+  server.registerTool(
+    "list_database_objects",
+    {
+      title: "List Database Objects",
+      description:
+        "List PostgreSQL tables, views, materialized views, sequences, functions, procedures, and triggers in an allowed schema.",
+      inputSchema: schemaParameter.shape
+    },
+    async ({ schema = defaultSchema(config) }: SchemaParameter) => {
+      validateSchema(schema, config);
+      const objects = await db.listDatabaseObjects(schema);
+      return toolResult({ schema, object_count: objects.length, objects });
+    }
+  );
+
+  server.registerTool(
+    "get_index_usage",
+    {
+      title: "Get Index Usage",
+      description:
+        "Return PostgreSQL cumulative index scan and tuple counters. Statistics reset and workload patterns must be considered before removing an index.",
+      inputSchema: indexUsageParameter.shape
+    },
+    async ({
+      schema = defaultSchema(config),
+      table_name
+    }: IndexUsageParameter) => {
+      validateSchema(schema, config);
+      const index_usage = await db.getIndexUsage(schema, table_name);
+      return toolResult({
+        schema,
+        table_name: table_name ?? null,
+        index_usage_count: index_usage.length,
+        index_usage
+      });
+    }
+  );
+
+  server.registerTool(
+    "list_active_queries",
+    {
+      title: "List Active Queries",
+      description:
+        "List non-idle PostgreSQL queries in the current database. Requires POSTGRES_ENABLE_DIAGNOSTIC_TOOLS=true. Query text is truncated to 1,000 characters and visibility depends on pg_stat_activity privileges.",
+      inputSchema: activityParameter.shape
+    },
+    async ({ limit = 50 }: ActivityParameter) => {
+      assertDiagnosticToolsEnabled(config);
+      const queries = await db.listActiveQueries(limit);
+      return toolResult({ query_count: queries.length, queries });
+    }
+  );
+
+  server.registerTool(
+    "get_locks",
+    {
+      title: "Get Locks",
+      description:
+        "List PostgreSQL relation locks in an allowed schema with waiting state and blocking backend IDs. Requires POSTGRES_ENABLE_DIAGNOSTIC_TOOLS=true. Query text is truncated to 1,000 characters.",
+      inputSchema: schemaActivityParameter.shape
+    },
+    async ({
+      schema = defaultSchema(config),
+      limit = 50
+    }: SchemaActivityParameter) => {
+      validateSchema(schema, config);
+      assertDiagnosticToolsEnabled(config);
+      const locks = await db.getLocks(schema, limit);
+      return toolResult({ schema, lock_count: locks.length, locks });
+    }
+  );
+
+  server.registerTool(
     "get_foreign_keys",
     {
       title: "Get Foreign Keys",
       description: "List foreign keys for a PostgreSQL table.",
       inputSchema: tableParameter.shape
     },
-    async ({ schema = "public", table_name }: TableParameter) => {
+    async ({ schema = defaultSchema(config), table_name }: TableParameter) => {
       validateSchema(schema, config);
       const foreign_keys = await db.getForeignKeys(schema, table_name);
       return {
@@ -143,7 +343,7 @@ export const registerPostgresTools = (
       description: "Return PostgreSQL table statistics.",
       inputSchema: tableParameter.shape
     },
-    async ({ schema = "public", table_name }: TableParameter) => {
+    async ({ schema = defaultSchema(config), table_name }: TableParameter) => {
       validateSchema(schema, config);
       const stats = await db.getTableStats(schema, table_name);
       return {

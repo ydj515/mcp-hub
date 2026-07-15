@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   validateAllowedSchemas,
+  validateMySqlWriteSql,
   validateReadOnlySql,
   withMaxRowsLimit
 } from "./safety.js";
@@ -38,7 +39,44 @@ describe("validateReadOnlySql", () => {
 
   it("rejects non-read statements", () => {
     expect(() => validateReadOnlySql("show databases")).toThrow(
-      "Only SELECT, WITH, and EXPLAIN statements are allowed"
+      "Only SELECT and WITH statements are allowed"
+    );
+  });
+
+  it("rejects EXPLAIN statements", () => {
+    expect(() => validateReadOnlySql("explain select * from users")).toThrow(
+      "Only SELECT and WITH statements are allowed"
+    );
+  });
+});
+
+describe("validateMySqlWriteSql", () => {
+  it.each([
+    "insert into users (name) values ('A')",
+    "update users set name = 'B' where id = 1",
+    "update users set role = 'admin' where id = 1",
+    "delete from users where id = 1",
+    "replace into users (id, name) values (1, 'A')",
+    "create table archived_users (id int)",
+    "create index idx_users_name on users (name)",
+    "drop index idx_users_name on users",
+    "alter table users add partition (partition p1 values less than (100))",
+    "analyze table users",
+    "optimize table users"
+  ])("allows supported MySQL write statement: %s", (sql) => {
+    expect(() => validateMySqlWriteSql(sql)).not.toThrow();
+  });
+
+  it.each([
+    "drop table users",
+    "truncate table users",
+    "drop database app",
+    "drop schema app",
+    "grant all on app.* to dev",
+    "select 1; delete from users"
+  ])("rejects forbidden MySQL write statement: %s", (sql) => {
+    expect(() => validateMySqlWriteSql(sql)).toThrow(
+      "MySQL write statement is not allowed"
     );
   });
 });

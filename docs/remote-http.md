@@ -17,6 +17,8 @@ export MCP_HUB_TOKEN="$(openssl rand -base64 32)"
 export PUBLIC_DATA_API_KEY="..."
 export POSTGRESQL_URL="postgresql://readonly:password@localhost:5432/app"
 export MYSQL_URL="mysql://readonly:password@localhost:3306/app"
+export POSTGRES_ENABLE_DIAGNOSTIC_TOOLS="false"
+export MYSQL_ENABLE_DIAGNOSTIC_TOOLS="false"
 export REDIS_URL="redis://readonly:password@localhost:6379/0"
 export GITLAB_TOKEN="..."
 export GITLAB_URL="https://gitlab.example.com"
@@ -103,7 +105,7 @@ export MCP_HUB_TOKEN="remote-server와-같은-토큰"
 
 - public internet에 노출할 때는 HTTPS 없이 직접 열지 않습니다.
 - `MCP_HUB_TOKEN`은 repo나 공유 설정 파일에 직접 적지 않고 환경 변수로 둡니다.
-- `postgres`, `mysql`은 읽기 전용 DB 계정을 사용합니다.
+- `postgres`, `mysql`은 읽기 전용 DB 계정을 사용합니다. `list_active_queries`와 `get_locks`는 기본 비활성이며, remote endpoint에서는 `POSTGRES_ENABLE_DIAGNOSTIC_TOOLS`, `MYSQL_ENABLE_DIAGNOSTIC_TOOLS`를 `false`로 유지합니다. 활성화하면 SQL 텍스트·세션 정보가 반환될 수 있고, PostgreSQL의 `get_index_usage`는 누적 성능 통계를 반환하므로 endpoint 접근자를 제한합니다. MySQL lock 조회에는 `performance_schema.data_locks` 권한이 필요합니다.
 - `redis`는 조회 권한만 가진 Redis ACL 사용자로 실행합니다. `get_client_list`와 `get_slowlog`은 민감한 운영 정보를 반환할 수 있으므로 접근자를 제한합니다.
 - `gitlab`은 필요한 scope만 가진 access token을 사용하고, self-hosted instance는 `GITLAB_URL`로 명시합니다. create/comment/approve/merge tool은 `GITLAB_ENABLE_WRITE_TOOLS=true`일 때만 실행됩니다.
 - `ALLOWED_SCHEMAS`, `MYSQL_ALLOWED_SCHEMAS`, row limit, query timeout을 설정해 노출 범위를 줄입니다.

@@ -4,7 +4,12 @@ export type PostgresConfig = {
   maxRows: number;
   queryTimeoutMs: number;
   poolMax: number;
+  enableWriteTools: boolean;
+  enableDiagnosticTools: boolean;
 };
+
+const parseBoolean = (value: string | undefined) =>
+  value?.toLowerCase() === "true";
 
 const parsePositiveInteger = (
   value: string | undefined,
@@ -45,6 +50,8 @@ export const loadPostgresConfig = (
       10000,
       "QUERY_TIMEOUT_MS"
     ),
-    poolMax: parsePositiveInteger(env.PG_POOL_MAX, 5, "PG_POOL_MAX")
+    poolMax: parsePositiveInteger(env.PG_POOL_MAX, 5, "PG_POOL_MAX"),
+    enableWriteTools: parseBoolean(env.POSTGRES_ENABLE_WRITE_TOOLS),
+    enableDiagnosticTools: parseBoolean(env.POSTGRES_ENABLE_DIAGNOSTIC_TOOLS)
   };
 };
