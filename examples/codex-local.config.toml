@@ -26,6 +26,13 @@ env_vars = ["POSTGRESQL_URL"]
 startup_timeout_sec = 20
 tool_timeout_sec = 60
 
+[mcp_servers.mcp_hub_redis]
+command = "node"
+args = ["<mcp-hub-repo>/packages/cli/dist/index.js", "stdio", "redis"]
+env_vars = ["REDIS_URL"]
+startup_timeout_sec = 20
+tool_timeout_sec = 60
+
 [mcp_servers.mcp_hub_gitlab]
 command = "node"
 args = ["<mcp-hub-repo>/packages/cli/dist/index.js", "stdio", "gitlab"]

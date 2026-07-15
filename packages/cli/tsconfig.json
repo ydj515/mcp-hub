@@ -11,6 +11,7 @@
     { "path": "../servers/gitlab" },
     { "path": "../servers/mysql" },
     { "path": "../servers/postgres" },
+    { "path": "../servers/redis" },
     { "path": "../servers/shortcuts" }
   ],
   "include": ["src/**/*.ts"]

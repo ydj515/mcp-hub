@@ -38,6 +38,13 @@
         "POSTGRESQL_URL": "${POSTGRESQL_URL}"
       }
     },
+    "mcp-hub-redis": {
+      "command": "node",
+      "args": ["<mcp-hub-repo>/packages/cli/dist/index.js", "stdio", "redis"],
+      "env": {
+        "REDIS_URL": "${REDIS_URL}"
+      }
+    },
     "mcp-hub-gitlab": {
       "command": "node",
       "args": ["<mcp-hub-repo>/packages/cli/dist/index.js", "stdio", "gitlab"],

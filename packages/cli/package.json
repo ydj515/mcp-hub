@@ -18,6 +18,7 @@
     "@mcp-hub/server-gitlab": "0.1.0",
     "@mcp-hub/server-mysql": "0.1.0",
     "@mcp-hub/server-postgres": "0.1.0",
+    "@mcp-hub/server-redis": "0.1.0",
     "@mcp-hub/server-shortcuts": "0.1.0"
   }
 }

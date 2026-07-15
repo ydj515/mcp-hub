@@ -30,6 +30,7 @@ node packages/cli/dist/index.js list
 | `shortcuts` | macOS/Windows 단축키 카테고리와 검색 |
 | `mysql` | MySQL 읽기 전용 introspection과 쿼리 실행 |
 | `postgres` | PostgreSQL 읽기 전용 introspection과 쿼리 실행 |
+| `redis` | standalone, Cluster, Sentinel Redis의 자료형과 운영 상태 읽기 전용 조회 |
 | `gitlab` | GitLab.com 및 self-hosted GitLab 프로젝트, 이슈, MR 조회 |
 
 ## 로컬 stdio 실행
@@ -41,6 +42,7 @@ node packages/cli/dist/index.js stdio api-finder
 node packages/cli/dist/index.js stdio shortcuts
 node packages/cli/dist/index.js stdio mysql
 node packages/cli/dist/index.js stdio postgres
+node packages/cli/dist/index.js stdio redis
 node packages/cli/dist/index.js stdio gitlab
 ```
 
@@ -66,7 +68,7 @@ npm 배포 후에는 프로젝트별 MCP 설정에서 다음 형태를 권장합
 }
 ```
 
-서버 id만 바꾸면 `api-finder`, `shortcuts`, `mysql`, `postgres`, `gitlab`을 같은 방식으로 등록할 수 있습니다.
+서버 id만 바꾸면 `api-finder`, `shortcuts`, `mysql`, `postgres`, `redis`, `gitlab`을 같은 방식으로 등록할 수 있습니다.
 
 ## Streamable HTTP 실행
 
@@ -100,6 +102,7 @@ http://localhost:3333/mcp/api-finder
 http://localhost:3333/mcp/shortcuts
 http://localhost:3333/mcp/mysql
 http://localhost:3333/mcp/postgres
+http://localhost:3333/mcp/redis
 http://localhost:3333/mcp/gitlab
 ```
 
@@ -155,6 +158,54 @@ MYSQL_QUERY_TIMEOUT_MS=10000
 MYSQL_POOL_LIMIT=5
 ```
 
+`redis`는 `REDIS_MODE`에 따라 standalone, Cluster, Sentinel 연결을 선택합니다. 기본값은 standalone이며 모든 도구는 조회 전용입니다.
+
+```text
+# standalone (기본값)
+REDIS_MODE=standalone
+REDIS_URL=redis://readonly:password@localhost:6379/0
+
+# Cluster
+REDIS_MODE=cluster
+REDIS_CLUSTER_NODES=rediss://redis-a:6379,rediss://redis-b:6379
+
+# Sentinel
+REDIS_MODE=sentinel
+REDIS_SENTINEL_NODES=sentinel-a:26379,sentinel-b:26379
+REDIS_SENTINEL_MASTER_NAME=mymaster
+
+# 공통 선택 설정
+REDIS_USERNAME=readonly
+REDIS_PASSWORD=password
+REDIS_TLS=true
+REDIS_MAX_RESULTS=100
+REDIS_MAX_VALUE_BYTES=1048576
+REDIS_SCAN_COUNT=100
+REDIS_SLOWLOG_COUNT=100
+REDIS_CONNECT_TIMEOUT_MS=10000
+REDIS_COMMAND_TIMEOUT_MS=10000
+```
+
+Redis tool은 다음과 같습니다.
+
+```text
+scan_keys
+get_key_metadata
+get_string
+get_hash
+get_list_range
+get_set_members
+get_sorted_set_range
+get_stream_entries
+get_server_info
+get_database_size
+get_client_list
+get_slowlog
+get_topology_status
+```
+
+`scan_keys`는 `KEYS`가 아닌 `SCAN`을 사용하며, Cluster에서는 노드별 cursor를 포함한 불투명 cursor를 반환합니다. 문자열·컬렉션 값은 유효한 UTF-8이면 텍스트로, 아니면 Base64로 반환합니다. `REDIS_MAX_RESULTS`는 범위 조회·진단 목록과 요청 `count`의 상한입니다. Redis의 `SCAN`/`HSCAN`/`SSCAN`에서 `COUNT`는 힌트이므로, 페이지를 임의로 잘라 다음 cursor에서 항목이 유실되는 일을 막기 위해 Redis가 반환한 한 페이지 전체를 보존합니다. 값 바이트는 항상 `REDIS_MAX_VALUE_BYTES`로 제한합니다.
+
 `shortcuts`는 별도 환경 변수가 필요 없습니다.
 
 `gitlab`은 GitLab access token이 필요합니다. GitLab.com은 `GITLAB_URL`을 생략할 수 있고, self-hosted GitLab은 instance URL을 지정합니다.
@@ -196,6 +247,8 @@ merge_merge_request
 > `ALLOWED_SCHEMAS`를 지정하면 노출할 schema 범위를 줄일 수 있습니다.
 > `mysql` 서버도 읽기 전용 DB 계정으로 실행하는 것을 권장합니다.
 > `MYSQL_ALLOWED_SCHEMAS`를 지정하면 노출할 schema 범위를 줄일 수 있습니다.
+> `redis` 서버는 쓰기·삭제·Lua·범용 명령 실행 도구를 제공하지 않지만, Redis ACL도 조회 명령만 허용하도록 별도로 구성해야 합니다.
+> `get_client_list`, `get_slowlog`, `get_topology_status` 응답에는 연결 주소, 키 이름 또는 명령 인자가 포함될 수 있으므로 remote MCP 접근 범위를 제한하세요.
 > `gitlab` 서버의 create/comment/approve/merge tool은 `GITLAB_ENABLE_WRITE_TOOLS=true`일 때만 실행됩니다. self-hosted instance가 relative URL 아래에 있으면 `GITLAB_URL=https://example.com/gitlab`처럼 지정하세요.
 
 ## 배포 후 사용 흐름

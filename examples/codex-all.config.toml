@@ -26,6 +26,13 @@ env_vars = ["POSTGRESQL_URL"]
 startup_timeout_sec = 20
 tool_timeout_sec = 60
 
+[mcp_servers.mcp_hub_redis]
+command = "npx"
+args = ["-y", "mcp-hub", "stdio", "redis"]
+env_vars = ["REDIS_URL"]
+startup_timeout_sec = 20
+tool_timeout_sec = 60
+
 [mcp_servers.mcp_hub_gitlab]
 command = "npx"
 args = ["-y", "mcp-hub", "stdio", "gitlab"]

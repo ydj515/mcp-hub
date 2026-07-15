@@ -22,6 +22,12 @@ bearer_token_env_var = "MCP_HUB_TOKEN"
 startup_timeout_sec = 20
 tool_timeout_sec = 60
 
+[mcp_servers.mcp_hub_redis_remote]
+url = "https://mcp.example.com/mcp/redis"
+bearer_token_env_var = "MCP_HUB_TOKEN"
+startup_timeout_sec = 20
+tool_timeout_sec = 60
+
 [mcp_servers.mcp_hub_gitlab_remote]
 url = "https://mcp.example.com/mcp/gitlab"
 bearer_token_env_var = "MCP_HUB_TOKEN"

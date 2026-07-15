@@ -24,6 +24,12 @@
         "Authorization": "Bearer ${MCP_HUB_TOKEN}"
       }
     },
+    "mcp-hub-redis-remote": {
+      "url": "https://mcp.example.com/mcp/redis",
+      "headers": {
+        "Authorization": "Bearer ${MCP_HUB_TOKEN}"
+      }
+    },
     "mcp-hub-gitlab-remote": {
       "url": "https://mcp.example.com/mcp/gitlab",
       "headers": {

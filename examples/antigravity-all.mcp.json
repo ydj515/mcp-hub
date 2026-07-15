@@ -26,6 +26,13 @@
         "POSTGRESQL_URL": "${POSTGRESQL_URL}"
       }
     },
+    "mcp-hub-redis": {
+      "command": "npx",
+      "args": ["-y", "mcp-hub", "stdio", "redis"],
+      "env": {
+        "REDIS_URL": "${REDIS_URL}"
+      }
+    },
     "mcp-hub-gitlab": {
       "command": "npx",
       "args": ["-y", "mcp-hub", "stdio", "gitlab"],
