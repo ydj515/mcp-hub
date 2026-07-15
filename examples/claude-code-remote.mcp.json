@@ -35,6 +35,13 @@
         "Authorization": "Bearer ${MCP_HUB_TOKEN}"
       }
     },
+    "mcp-hub-docker-remote": {
+      "type": "http",
+      "url": "https://mcp.example.com/mcp/docker",
+      "headers": {
+        "Authorization": "Bearer ${MCP_HUB_TOKEN}"
+      }
+    },
     "mcp-hub-gitlab-remote": {
       "type": "http",
       "url": "https://mcp.example.com/mcp/gitlab",

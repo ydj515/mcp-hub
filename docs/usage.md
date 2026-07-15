@@ -31,6 +31,7 @@ node packages/cli/dist/index.js list
 | `mysql` | MySQL 읽기 전용 introspection과 쿼리 실행 |
 | `postgres` | PostgreSQL 읽기 전용 introspection과 쿼리 실행 |
 | `redis` | standalone, Cluster, Sentinel Redis의 자료형과 운영 상태 읽기 전용 조회 |
+| `docker` | 현재 Docker context의 컨테이너·이미지·network·volume·Compose 진단과 선택적 컨테이너·Compose 실행 tool |
 | `gitlab` | GitLab.com 및 self-hosted GitLab 프로젝트, 이슈, MR 조회 |
 
 ## 로컬 stdio 실행
@@ -43,6 +44,7 @@ node packages/cli/dist/index.js stdio shortcuts
 node packages/cli/dist/index.js stdio mysql
 node packages/cli/dist/index.js stdio postgres
 node packages/cli/dist/index.js stdio redis
+node packages/cli/dist/index.js stdio docker
 node packages/cli/dist/index.js stdio gitlab
 ```
 
@@ -68,7 +70,7 @@ npm 배포 후에는 프로젝트별 MCP 설정에서 다음 형태를 권장합
 }
 ```
 
-서버 id만 바꾸면 `api-finder`, `shortcuts`, `mysql`, `postgres`, `redis`, `gitlab`을 같은 방식으로 등록할 수 있습니다.
+서버 id만 바꾸면 `api-finder`, `shortcuts`, `mysql`, `postgres`, `redis`, `docker`, `gitlab`을 같은 방식으로 등록할 수 있습니다.
 
 ## Streamable HTTP 실행
 
@@ -103,6 +105,7 @@ http://localhost:3333/mcp/shortcuts
 http://localhost:3333/mcp/mysql
 http://localhost:3333/mcp/postgres
 http://localhost:3333/mcp/redis
+http://localhost:3333/mcp/docker
 http://localhost:3333/mcp/gitlab
 ```
 
@@ -246,6 +249,70 @@ get_topology_status
 
 `scan_keys`는 `KEYS`가 아닌 `SCAN`을 사용하며, Cluster에서는 노드별 cursor를 포함한 불투명 cursor를 반환합니다. 문자열·컬렉션 값은 유효한 UTF-8이면 텍스트로, 아니면 Base64로 반환합니다. `REDIS_MAX_RESULTS`는 범위 조회·진단 목록과 요청 `count`의 상한입니다. Redis의 `SCAN`/`HSCAN`/`SSCAN`에서 `COUNT`는 힌트이므로, 페이지를 임의로 잘라 다음 cursor에서 항목이 유실되는 일을 막기 위해 Redis가 반환한 한 페이지 전체를 보존합니다. 값 바이트는 항상 `REDIS_MAX_VALUE_BYTES`로 제한합니다.
 
+`docker`는 현재 사용자의 Docker CLI context와 인증 설정을 그대로 사용합니다. Docker Engine 접근 권한과 Docker CLI가 필요하며, 기본값은 조회 전용입니다.
+
+```text
+DOCKER_ENABLE_WRITE_TOOLS=false
+DOCKER_ALLOWED_CONTAINERS=api,worker
+DOCKER_ALLOWED_NETWORKS=app-net
+DOCKER_ALLOWED_VOLUMES=app-data
+DOCKER_COMPOSE_PROJECTS={"app":"/Users/example/dev/app","worker":"/Users/example/dev/worker"}
+DOCKER_MAX_COMPOSE_CONTAINERS=100
+DOCKER_EVENTS_LOOKBACK_MINUTES=15
+DOCKER_MAX_EVENT_LOOKBACK_MINUTES=60
+DOCKER_MAX_LOG_LINES=500
+DOCKER_MAX_OUTPUT_BYTES=1048576
+DOCKER_COMMAND_TIMEOUT_MS=10000
+```
+
+Docker tool은 다음과 같습니다.
+
+```text
+get_docker_info
+list_containers
+inspect_container
+get_container_logs
+list_images
+list_compose_projects
+list_compose_services
+get_compose_logs
+get_compose_stats
+get_compose_config
+get_compose_service_port
+list_compose_service_processes
+list_compose_service_images
+get_compose_events
+get_compose_health_status
+get_compose_service_dependencies
+get_container_stats
+list_networks
+inspect_network
+list_volumes
+inspect_volume
+start_container
+restart_container
+exec_container
+up_compose_project
+down_compose_project
+restart_compose_services
+exec_compose_service
+pull_compose_images
+build_compose_services
+scale_compose_services
+start_compose_services
+stop_compose_services
+pause_compose_services
+unpause_compose_services
+```
+
+`DOCKER_ALLOWED_CONTAINERS`는 선택 사항이며 설정하면 `inspect_container`, `get_container_logs`, `get_container_stats` 및 쓰기·실행 tool의 대상 컨테이너를 정확한 이름 또는 ID로 제한합니다. `DOCKER_ALLOWED_NETWORKS`와 `DOCKER_ALLOWED_VOLUMES`는 각각 network·volume 목록을 필터링하고 상세 조회 대상을 정확한 이름으로 제한합니다. `DOCKER_COMPOSE_PROJECTS`는 JSON object 형식의 `프로젝트명: Compose 디렉터리` mapping이며, Compose tool은 여기에 등록된 프로젝트에서만 실행됩니다. 예를 들어 `{"app":"/Users/example/dev/app"}`을 설정하면 `project: "app"` 요청은 해당 디렉터리의 Compose 설정을 사용합니다.
+
+`get_compose_events`는 `DOCKER_EVENTS_LOOKBACK_MINUTES` 기본값(15분) 또는 요청한 `since_minutes`의 최근 이벤트만 반환하며, 어느 경우든 `DOCKER_MAX_EVENT_LOOKBACK_MINUTES`(기본 60분)를 넘지 않습니다. Compose event stream을 열어 두지 않도록 종료 시각을 함께 전달합니다. `get_compose_health_status`는 `docker compose ps` 결과의 각 컨테이너 healthcheck 상태를 반환하고 `DOCKER_MAX_COMPOSE_CONTAINERS`(기본 100)까지 처리한 뒤 초과 여부를 `truncated`로 표시합니다. `get_compose_service_dependencies`와 `get_compose_config`는 환경 변수 보간과 service `env_file` 해석 없이 JSON config를 읽습니다.
+
+`get_compose_stats`와 `get_container_stats`는 stream을 열지 않는 한 번의 자원 사용량 snapshot을 반환합니다. `get_compose_service_port`는 service·내부 포트와 선택적 `tcp`/`udp` protocol을 받아 public binding을 반환합니다. `list_compose_service_processes`는 Compose CLI의 표 형식 process 목록을 원문으로 반환하고, `list_compose_service_images`는 JSON image 목록을 반환합니다. `list_containers`, `list_images`, allowlist를 설정하지 않은 `list_networks`, `list_volumes`는 Docker context 전체를 조회하므로 remote endpoint에는 해당 context 자체를 제한하거나 별도 Docker context를 사용하세요.
+
+> `get_compose_health_status`의 healthcheck log, network inspect의 연결 컨테이너·IP 정보, volume inspect의 mountpoint, events와 stats의 컨테이너 메타데이터는 개발 환경 정보나 민감한 payload를 포함할 수 있습니다. Remote endpoint에서는 allowlist와 인증 범위를 함께 제한하세요.
+
 `shortcuts`는 별도 환경 변수가 필요 없습니다.
 
 `gitlab`은 GitLab access token이 필요합니다. GitLab.com은 `GITLAB_URL`을 생략할 수 있고, self-hosted GitLab은 instance URL을 지정합니다.
@@ -293,6 +360,12 @@ merge_merge_request
 > MySQL의 `list_active_queries`, `get_locks`는 `MYSQL_ENABLE_DIAGNOSTIC_TOOLS=true`일 때만 실행됩니다. `list_active_queries`는 현재 database가 허용 schema인 세션만 대상으로 하지만, SQL 본문에 schema-qualified relation이나 리터럴이 포함될 수 있습니다.
 > `redis` 서버는 쓰기·삭제·Lua·범용 명령 실행 도구를 제공하지 않지만, Redis ACL도 조회 명령만 허용하도록 별도로 구성해야 합니다.
 > `get_client_list`, `get_slowlog`, `get_topology_status` 응답에는 연결 주소, 키 이름 또는 명령 인자가 포함될 수 있으므로 remote MCP 접근 범위를 제한하세요.
+> `docker`의 `start_container`, `restart_container`, `exec_container`는 `DOCKER_ENABLE_WRITE_TOOLS=true`일 때만 실행됩니다. `exec_container`는 컨테이너 내부에서 임의 명령을 실행할 수 있으므로 개발·로컬 Docker context에서만 활성화하고, 가능하면 `DOCKER_ALLOWED_CONTAINERS`를 함께 지정하세요.
+> `docker`의 `up_compose_project`, `down_compose_project`, `restart_compose_services`, `exec_compose_service`도 `DOCKER_ENABLE_WRITE_TOOLS=true`가 필요합니다. `down_compose_project`는 컨테이너·network만 중지·제거하며 named volume·anonymous volume·image를 제거하는 `--volumes`, `--rmi` 옵션은 제공하지 않습니다.
+> `docker`의 `pull_compose_images`, `build_compose_services`, `scale_compose_services`도 `DOCKER_ENABLE_WRITE_TOOLS=true`가 필요합니다. `scale_compose_services`는 서비스마다 0~100 replica를 설정하며, 0은 해당 서비스의 실행 container를 없앨 수 있습니다. `build_compose_services`는 `--push`를 제공하지 않습니다.
+> `docker`의 `start_compose_services`, `stop_compose_services`, `pause_compose_services`, `unpause_compose_services`도 `DOCKER_ENABLE_WRITE_TOOLS=true`가 필요합니다. `stop_compose_services`는 container를 제거하지 않지만 실행 중인 서비스의 요청 처리를 중단하며, `pause_compose_services`는 process를 일시 중지하므로 개발 환경에서만 사용하세요.
+> `get_compose_service_port` 응답에는 host 주소가, `list_compose_service_processes` 응답에는 process command와 argument가 포함될 수 있습니다. remote Docker MCP에서는 endpoint 접근 범위와 `DOCKER_COMPOSE_PROJECTS`를 함께 제한하세요.
+> Docker daemon 접근 권한은 호스트에서 사실상 높은 권한이 될 수 있습니다. remote HTTP endpoint는 Docker socket이 연결된 호스트에 직접 노출하지 말고, 최소 권한 Docker context·네트워크 접근 제어·별도 인증을 함께 사용하세요.
 > `gitlab` 서버의 create/comment/approve/merge tool은 `GITLAB_ENABLE_WRITE_TOOLS=true`일 때만 실행됩니다. self-hosted instance가 relative URL 아래에 있으면 `GITLAB_URL=https://example.com/gitlab`처럼 지정하세요.
 
 ## 배포 후 사용 흐름

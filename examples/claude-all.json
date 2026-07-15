@@ -33,6 +33,17 @@
         "REDIS_URL": "${REDIS_URL}"
       }
     },
+    "mcp-hub-docker": {
+      "command": "npx",
+      "args": ["-y", "mcp-hub", "stdio", "docker"],
+      "env": {
+        "DOCKER_ENABLE_WRITE_TOOLS": "${DOCKER_ENABLE_WRITE_TOOLS}",
+        "DOCKER_ALLOWED_CONTAINERS": "${DOCKER_ALLOWED_CONTAINERS}",
+        "DOCKER_ALLOWED_NETWORKS": "${DOCKER_ALLOWED_NETWORKS}",
+        "DOCKER_ALLOWED_VOLUMES": "${DOCKER_ALLOWED_VOLUMES}",
+        "DOCKER_COMPOSE_PROJECTS": "${DOCKER_COMPOSE_PROJECTS}"
+      }
+    },
     "mcp-hub-gitlab": {
       "command": "npx",
       "args": ["-y", "mcp-hub", "stdio", "gitlab"],

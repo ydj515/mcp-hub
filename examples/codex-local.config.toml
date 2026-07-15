@@ -33,6 +33,13 @@ env_vars = ["REDIS_URL"]
 startup_timeout_sec = 20
 tool_timeout_sec = 60
 
+[mcp_servers.mcp_hub_docker]
+command = "node"
+args = ["<mcp-hub-repo>/packages/cli/dist/index.js", "stdio", "docker"]
+env_vars = ["DOCKER_ENABLE_WRITE_TOOLS", "DOCKER_ALLOWED_CONTAINERS", "DOCKER_ALLOWED_NETWORKS", "DOCKER_ALLOWED_VOLUMES", "DOCKER_COMPOSE_PROJECTS"]
+startup_timeout_sec = 20
+tool_timeout_sec = 60
+
 [mcp_servers.mcp_hub_gitlab]
 command = "node"
 args = ["<mcp-hub-repo>/packages/cli/dist/index.js", "stdio", "gitlab"]

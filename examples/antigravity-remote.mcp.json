@@ -30,6 +30,12 @@
         "Authorization": "Bearer ${MCP_HUB_TOKEN}"
       }
     },
+    "mcp-hub-docker-remote": {
+      "serverUrl": "https://mcp.example.com/mcp/docker",
+      "headers": {
+        "Authorization": "Bearer ${MCP_HUB_TOKEN}"
+      }
+    },
     "mcp-hub-gitlab-remote": {
       "serverUrl": "https://mcp.example.com/mcp/gitlab",
       "headers": {

@@ -45,6 +45,17 @@
         "REDIS_URL": "${REDIS_URL}"
       }
     },
+    "mcp-hub-docker": {
+      "command": "node",
+      "args": ["<mcp-hub-repo>/packages/cli/dist/index.js", "stdio", "docker"],
+      "env": {
+        "DOCKER_ENABLE_WRITE_TOOLS": "${DOCKER_ENABLE_WRITE_TOOLS}",
+        "DOCKER_ALLOWED_CONTAINERS": "${DOCKER_ALLOWED_CONTAINERS}",
+        "DOCKER_ALLOWED_NETWORKS": "${DOCKER_ALLOWED_NETWORKS}",
+        "DOCKER_ALLOWED_VOLUMES": "${DOCKER_ALLOWED_VOLUMES}",
+        "DOCKER_COMPOSE_PROJECTS": "${DOCKER_COMPOSE_PROJECTS}"
+      }
+    },
     "mcp-hub-gitlab": {
       "command": "node",
       "args": ["<mcp-hub-repo>/packages/cli/dist/index.js", "stdio", "gitlab"],
