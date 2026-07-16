@@ -30,7 +30,16 @@ const keyMetadataOutput = {
   memory_bytes: nullableNumber,
   length: nullableNumber
 };
-const getStringOutput = { exists: z.boolean(), value: z.unknown() };
+const getStringOutput = {
+  exists: z.boolean(),
+  value: z
+    .object({
+      value: z.string(),
+      encoding: z.enum(["utf8", "base64"]),
+      truncated: z.boolean()
+    })
+    .nullable()
+};
 const hashOutput = { cursor, complete, entries: items, truncated };
 const listOutput = { values: items, truncated };
 const setOutput = { cursor, complete, members: items, truncated };

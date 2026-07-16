@@ -22,8 +22,8 @@ const categoriesOutput = {
 
 const searchOutput = {
   query: z.string(),
-  category: z.unknown(),
-  platform: z.unknown(),
+  category: z.string().nullable(),
+  platform: z.enum(["mac", "win"]).nullable(),
   results: z.array(z.unknown())
 };
 

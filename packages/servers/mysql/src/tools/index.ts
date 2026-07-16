@@ -49,7 +49,7 @@ const runQueryOutput = {
   rows
 };
 const runWriteQueryOutput = {
-  affected_rows: z.unknown(),
+  affected_rows: z.number(),
   row_count: z.number(),
   rows
 };

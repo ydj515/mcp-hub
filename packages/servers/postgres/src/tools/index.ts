@@ -52,8 +52,8 @@ const runQueryOutput = {
   rows
 };
 const runWriteQueryOutput = {
-  command: z.unknown(),
-  affected_rows: z.unknown(),
+  command: z.string(),
+  affected_rows: z.number(),
   row_count: z.number(),
   rows
 };
@@ -65,7 +65,7 @@ const listDatabaseObjectsOutput = {
 };
 const indexUsageOutput = {
   schema: z.string(),
-  table_name: z.unknown(),
+  table_name: z.string().nullable(),
   index_usage_count: z.number(),
   index_usage: rows
 };
