@@ -1,4 +1,5 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { z } from "zod";
 import {
   getPublicDataApiDetails,
   searchPublicDataApis,
@@ -10,17 +11,33 @@ import {
   type SearchParameters,
 } from "./schemas.js";
 
+// data.go.kr 외부 공공데이터 API를 조회만 하므로 read-only이며 외부 세계와 상호작용합니다.
+const readOnly = {
+  readOnlyHint: true,
+  openWorldHint: true,
+} as const;
+
+const searchOutput = {
+  results: z.array(z.unknown()),
+};
+
+const detailsOutput = {
+  spec: z.unknown(),
+};
+
 export const registerApiFinderTools = (
   server: McpServer,
   env: NodeJS.ProcessEnv,
 ) => {
   server.registerTool(
-    "searchPublicDataAPI",
+    "search_public_data_api",
     {
       title: "Search Public Data API",
       description:
         "Search data.go.kr public APIs for a service idea and keywords.",
       inputSchema: searchParameters.shape,
+      outputSchema: searchOutput,
+      annotations: readOnly,
     },
     async ({ keywords }: SearchParameters) => {
       const apiKey = env.PUBLIC_DATA_API_KEY;
@@ -37,12 +54,14 @@ export const registerApiFinderTools = (
   );
 
   server.registerTool(
-    "getPublicDataAPIDetails",
+    "get_public_data_api_details",
     {
       title: "Get Public Data API Details",
       description:
         "Fetch the Swagger/OpenAPI specification for a selected public API.",
       inputSchema: detailsParameters.shape,
+      outputSchema: detailsOutput,
+      annotations: readOnly,
     },
     async ({ api_id }: DetailsParameters) => {
       const spec = await getPublicDataApiDetails(api_id);

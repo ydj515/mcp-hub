@@ -1,5 +1,6 @@
 import { assertFeatureEnabled } from "@mcp-hub/core";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { z } from "zod";
 import type { MySqlConfig } from "../config.js";
 import type { MySqlDatabase } from "../services/database.js";
 import {
@@ -16,6 +17,51 @@ import {
   type TableParameter,
   type WriteQueryParameter
 } from "./schemas.js";
+
+// introspection·조회·EXPLAIN·진단 tool은 데이터를 바꾸지 않으며 특정 DB에 국한됩니다.
+const readOnly = {
+  readOnlyHint: true,
+  openWorldHint: false
+} as const;
+
+// run_write_query는 허용된 DML/유지보수 문을 실행하므로 파괴적이고 멱등하지 않습니다.
+const writeQuery = {
+  readOnlyHint: false,
+  destructiveHint: true,
+  idempotentHint: false,
+  openWorldHint: false
+} as const;
+
+// outputSchema는 각 tool의 최상위 구조를 알리고, 배열/객체 페이로드는 loose하게 둡니다.
+const rows = z.array(z.unknown());
+const tableItemsOutput = (key: string) => ({
+  table: z.string(),
+  [key]: rows
+});
+const listTablesOutput = {
+  schema: z.string(),
+  table_count: z.number(),
+  tables: rows
+};
+const runQueryOutput = {
+  row_count: z.number(),
+  max_rows: z.number(),
+  rows
+};
+const runWriteQueryOutput = {
+  affected_rows: z.number(),
+  row_count: z.number(),
+  rows
+};
+const capabilitiesOutput = { capabilities: z.unknown() };
+const listDatabaseObjectsOutput = {
+  schema: z.string(),
+  object_count: z.number(),
+  objects: rows
+};
+const activeQueriesOutput = { query_count: z.number(), queries: rows };
+const locksOutput = { schema: z.string(), lock_count: z.number(), locks: rows };
+const explainOutput = { plan: z.unknown() };
 
 const validateSchema = (schema: string, config: MySqlConfig) => {
   if (!config.allowedSchemas.includes(schema)) {
@@ -56,20 +102,14 @@ export const registerMySqlTools = (
     {
       title: "List Tables",
       description: "List tables in an allowed MySQL schema.",
-      inputSchema: schemaParameter.shape
+      inputSchema: schemaParameter.shape,
+      outputSchema: listTablesOutput,
+      annotations: readOnly
     },
     async ({ schema = defaultSchema(config) }: SchemaParameter) => {
       validateSchema(schema, config);
       const tables = await db.listTables(schema);
-      return {
-        content: [
-          {
-            type: "text",
-            text: jsonText({ schema, table_count: tables.length, tables })
-          }
-        ],
-        structuredContent: { schema, table_count: tables.length, tables }
-      };
+      return toolResult({ schema, table_count: tables.length, tables });
     }
   );
 
@@ -78,20 +118,14 @@ export const registerMySqlTools = (
     {
       title: "Describe Table",
       description: "Describe columns for a MySQL table.",
-      inputSchema: tableParameter.shape
+      inputSchema: tableParameter.shape,
+      outputSchema: tableItemsOutput("columns"),
+      annotations: readOnly
     },
     async ({ schema = defaultSchema(config), table_name }: TableParameter) => {
       validateSchema(schema, config);
       const columns = await db.describeTable(schema, table_name);
-      return {
-        content: [
-          {
-            type: "text",
-            text: jsonText({ table: `${schema}.${table_name}`, columns })
-          }
-        ],
-        structuredContent: { table: `${schema}.${table_name}`, columns }
-      };
+      return toolResult({ table: `${schema}.${table_name}`, columns });
     }
   );
 
@@ -100,27 +134,17 @@ export const registerMySqlTools = (
     {
       title: "Run Query",
       description: "Run a read-only MySQL query.",
-      inputSchema: queryParameter.shape
+      inputSchema: queryParameter.shape,
+      outputSchema: runQueryOutput,
+      annotations: readOnly
     },
     async ({ sql }: QueryParameter) => {
       const rows = await db.runReadOnlyQuery(sql);
-      return {
-        content: [
-          {
-            type: "text",
-            text: jsonText({
-              row_count: rows.length,
-              max_rows: config.maxRows,
-              rows
-            })
-          }
-        ],
-        structuredContent: {
-          row_count: rows.length,
-          max_rows: config.maxRows,
-          rows
-        }
-      };
+      return toolResult({
+        row_count: rows.length,
+        max_rows: config.maxRows,
+        rows
+      });
     }
   );
 
@@ -129,7 +153,9 @@ export const registerMySqlTools = (
     {
       title: "Get Server Capabilities",
       description:
-        "Return MySQL version, SQL mode, default storage engine, and available storage engines."
+        "Return MySQL version, SQL mode, default storage engine, and available storage engines.",
+      outputSchema: capabilitiesOutput,
+      annotations: readOnly
     },
     async () => {
       const capabilities = await db.getServerCapabilities();
@@ -143,7 +169,9 @@ export const registerMySqlTools = (
       title: "Get Indexes",
       description:
         "List MySQL index key parts, uniqueness, type, cardinality, visibility, and functional expressions for a table.",
-      inputSchema: tableParameter.shape
+      inputSchema: tableParameter.shape,
+      outputSchema: tableItemsOutput("indexes"),
+      annotations: readOnly
     },
     async ({ schema = defaultSchema(config), table_name }: TableParameter) => {
       validateSchema(schema, config);
@@ -158,7 +186,9 @@ export const registerMySqlTools = (
       title: "Get Constraints",
       description:
         "List MySQL primary key, unique, foreign key, and check constraints for a table.",
-      inputSchema: tableParameter.shape
+      inputSchema: tableParameter.shape,
+      outputSchema: tableItemsOutput("constraints"),
+      annotations: readOnly
     },
     async ({ schema = defaultSchema(config), table_name }: TableParameter) => {
       validateSchema(schema, config);
@@ -173,7 +203,9 @@ export const registerMySqlTools = (
       title: "Get Partitions",
       description:
         "List MySQL partition and subpartition definitions, bounds, and estimated sizes for a table.",
-      inputSchema: tableParameter.shape
+      inputSchema: tableParameter.shape,
+      outputSchema: tableItemsOutput("partitions"),
+      annotations: readOnly
     },
     async ({ schema = defaultSchema(config), table_name }: TableParameter) => {
       validateSchema(schema, config);
@@ -188,7 +220,9 @@ export const registerMySqlTools = (
       title: "Get Table Size",
       description:
         "Return MySQL estimated rows and data, index, free-space, and total table sizes in bytes.",
-      inputSchema: tableParameter.shape
+      inputSchema: tableParameter.shape,
+      outputSchema: { table: z.string(), size: z.unknown() },
+      annotations: readOnly
     },
     async ({ schema = defaultSchema(config), table_name }: TableParameter) => {
       validateSchema(schema, config);
@@ -203,7 +237,9 @@ export const registerMySqlTools = (
       title: "Get Table Stats",
       description:
         "Return MySQL storage engine, estimated rows, row length, allocation, and maintenance timestamps for a table.",
-      inputSchema: tableParameter.shape
+      inputSchema: tableParameter.shape,
+      outputSchema: { table: z.string(), stats: z.unknown() },
+      annotations: readOnly
     },
     async ({ schema = defaultSchema(config), table_name }: TableParameter) => {
       validateSchema(schema, config);
@@ -218,7 +254,9 @@ export const registerMySqlTools = (
       title: "List Database Objects",
       description:
         "List MySQL tables, views, triggers, routines, and events in an allowed schema.",
-      inputSchema: schemaParameter.shape
+      inputSchema: schemaParameter.shape,
+      outputSchema: listDatabaseObjectsOutput,
+      annotations: readOnly
     },
     async ({ schema = defaultSchema(config) }: SchemaParameter) => {
       validateSchema(schema, config);
@@ -233,7 +271,9 @@ export const registerMySqlTools = (
       title: "List Active Queries",
       description:
         "List non-sleeping MySQL queries in allowed schemas. Requires MYSQL_ENABLE_DIAGNOSTIC_TOOLS=true. Query text is truncated to 1,000 characters.",
-      inputSchema: activityParameter.shape
+      inputSchema: activityParameter.shape,
+      outputSchema: activeQueriesOutput,
+      annotations: readOnly
     },
     async ({ limit = 50 }: ActivityParameter) => {
       assertDiagnosticToolsEnabled(config);
@@ -248,7 +288,9 @@ export const registerMySqlTools = (
       title: "Get Locks",
       description:
         "List MySQL InnoDB locks for an allowed schema using Performance Schema. Requires MYSQL_ENABLE_DIAGNOSTIC_TOOLS=true and access to performance_schema.data_locks.",
-      inputSchema: schemaActivityParameter.shape
+      inputSchema: schemaActivityParameter.shape,
+      outputSchema: locksOutput,
+      annotations: readOnly
     },
     async ({
       schema = defaultSchema(config),
@@ -267,20 +309,18 @@ export const registerMySqlTools = (
       title: "Run Write Query",
       description:
         "Run one permitted MySQL DML or maintenance statement. Requires MYSQL_ENABLE_WRITE_TOOLS=true.",
-      inputSchema: writeQueryParameter.shape
+      inputSchema: writeQueryParameter.shape,
+      outputSchema: runWriteQueryOutput,
+      annotations: writeQuery
     },
     async ({ sql }: WriteQueryParameter) => {
       assertWriteToolsEnabled(config);
       const result = await db.runWriteQuery(sql);
-      const payload = {
+      return toolResult({
         affected_rows: result.affectedRows,
         row_count: result.rows.length,
         rows: result.rows
-      };
-      return {
-        content: [{ type: "text", text: jsonText(payload) }],
-        structuredContent: payload
-      };
+      });
     }
   );
 
@@ -289,20 +329,14 @@ export const registerMySqlTools = (
     {
       title: "Get Foreign Keys",
       description: "List foreign keys for a MySQL table.",
-      inputSchema: tableParameter.shape
+      inputSchema: tableParameter.shape,
+      outputSchema: tableItemsOutput("foreign_keys"),
+      annotations: readOnly
     },
     async ({ schema = defaultSchema(config), table_name }: TableParameter) => {
       validateSchema(schema, config);
       const foreign_keys = await db.getForeignKeys(schema, table_name);
-      return {
-        content: [
-          {
-            type: "text",
-            text: jsonText({ table: `${schema}.${table_name}`, foreign_keys })
-          }
-        ],
-        structuredContent: { table: `${schema}.${table_name}`, foreign_keys }
-      };
+      return toolResult({ table: `${schema}.${table_name}`, foreign_keys });
     }
   );
 
@@ -311,7 +345,9 @@ export const registerMySqlTools = (
     {
       title: "Explain Query",
       description: "Return EXPLAIN JSON for a read-only MySQL query.",
-      inputSchema: queryParameter.shape
+      inputSchema: queryParameter.shape,
+      outputSchema: explainOutput,
+      annotations: readOnly
     },
     async ({ sql }: QueryParameter) => {
       const plan = await db.explainQuery(sql);

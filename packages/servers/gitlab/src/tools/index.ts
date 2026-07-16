@@ -1,5 +1,6 @@
 import { assertFeatureEnabled } from "@mcp-hub/core";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { z } from "zod";
 import type { GitLabConfig } from "../config.js";
 import type { GitLabClient } from "../services/gitlab.js";
 import {
@@ -38,6 +39,53 @@ import {
   type MergeMergeRequestParameters,
   type SearchProjectsParameters
 } from "./schemas.js";
+
+// 조회 tool은 GitLab 상태를 바꾸지 않고, 외부 GitLab 인스턴스(open world)와 통신합니다.
+const readOnly = {
+  readOnlyHint: true,
+  openWorldHint: true
+} as const;
+
+// issue/MR/note 생성은 새 리소스를 추가할 뿐 기존 데이터를 파괴하지 않고, 반복하면 중복 생성됩니다.
+const writeCreate = {
+  readOnlyHint: false,
+  destructiveHint: false,
+  idempotentHint: false,
+  openWorldHint: true
+} as const;
+
+// 승인은 파괴적이지 않고, 이미 승인된 MR을 다시 승인해도 상태가 같아 멱등합니다.
+const approveWrite = {
+  readOnlyHint: false,
+  destructiveHint: false,
+  idempotentHint: true,
+  openWorldHint: true
+} as const;
+
+// 병합은 브랜치 상태를 되돌리기 어렵게 바꾸므로 파괴적이며 반복 실행할 수 없습니다.
+const mergeWrite = {
+  readOnlyHint: false,
+  destructiveHint: true,
+  idempotentHint: false,
+  openWorldHint: true
+} as const;
+
+// 모든 응답은 withInstance로 gitlab_instance를 덧붙이며, list 계열은 { items, pagination }을 폅니다.
+const instance = z.string();
+const listOutput = {
+  gitlab_instance: instance,
+  items: z.array(z.unknown()),
+  pagination: z.unknown()
+};
+const userOutput = { gitlab_instance: instance, user: z.unknown() };
+const projectOutput = { gitlab_instance: instance, project: z.unknown() };
+const issueOutput = { gitlab_instance: instance, issue: z.unknown() };
+const mergeRequestOutput = {
+  gitlab_instance: instance,
+  merge_request: z.unknown()
+};
+const fileOutput = { gitlab_instance: instance, file: z.unknown() };
+const noteOutput = { gitlab_instance: instance, note: z.unknown() };
 
 const jsonText = (value: unknown) => JSON.stringify(value, null, 2);
 
@@ -110,7 +158,9 @@ export const registerGitLabTools = (
       title: "Get Current GitLab User",
       description:
         "Return the authenticated GitLab user for the configured GitLab instance.",
-      inputSchema: {}
+      inputSchema: {},
+      outputSchema: userOutput,
+      annotations: readOnly
     },
     async () => {
       const user = await client.getCurrentUser();
@@ -124,7 +174,9 @@ export const registerGitLabTools = (
       title: "Search GitLab Projects",
       description:
         "Search GitLab projects on GitLab.com or a configured self-hosted GitLab instance.",
-      inputSchema: searchProjectsParameters.shape
+      inputSchema: searchProjectsParameters.shape,
+      outputSchema: listOutput,
+      annotations: readOnly
     },
     async (params: SearchProjectsParameters) => {
       const projects = await client.searchProjects(params);
@@ -138,7 +190,9 @@ export const registerGitLabTools = (
       title: "Get GitLab Project",
       description:
         "Fetch a GitLab project by numeric ID or namespaced path like group/project.",
-      inputSchema: getProjectParameters.shape
+      inputSchema: getProjectParameters.shape,
+      outputSchema: projectOutput,
+      annotations: readOnly
     },
     async ({ project_id }: GetProjectParameters) => {
       const project = await client.getProject(project_id);
@@ -152,7 +206,9 @@ export const registerGitLabTools = (
       title: "List GitLab Issues",
       description:
         "List issues for a GitLab project with state, labels, search, author, and assignee filters.",
-      inputSchema: listIssuesParameters.shape
+      inputSchema: listIssuesParameters.shape,
+      outputSchema: listOutput,
+      annotations: readOnly
     },
     async (params: ListIssuesParameters) => {
       const issues = await client.listIssues(params);
@@ -166,7 +222,9 @@ export const registerGitLabTools = (
       title: "Get GitLab Issue",
       description:
         "Fetch a single GitLab project issue by project ID/path and issue IID.",
-      inputSchema: getIssueParameters.shape
+      inputSchema: getIssueParameters.shape,
+      outputSchema: issueOutput,
+      annotations: readOnly
     },
     async ({ project_id, issue_iid }: GetIssueParameters) => {
       const issue = await client.getIssue(project_id, issue_iid);
@@ -180,7 +238,9 @@ export const registerGitLabTools = (
       title: "List GitLab Merge Requests",
       description:
         "List merge requests for a GitLab project with state, labels, search, branch, author, and reviewer filters.",
-      inputSchema: listMergeRequestsParameters.shape
+      inputSchema: listMergeRequestsParameters.shape,
+      outputSchema: listOutput,
+      annotations: readOnly
     },
     async (params: ListMergeRequestsParameters) => {
       const merge_requests = await client.listMergeRequests(params);
@@ -194,7 +254,9 @@ export const registerGitLabTools = (
       title: "Get GitLab Merge Request",
       description:
         "Fetch a single GitLab project merge request by project ID/path and merge request IID.",
-      inputSchema: getMergeRequestParameters.shape
+      inputSchema: getMergeRequestParameters.shape,
+      outputSchema: mergeRequestOutput,
+      annotations: readOnly
     },
     async ({
       project_id,
@@ -214,7 +276,9 @@ export const registerGitLabTools = (
       title: "List GitLab Project Branches",
       description:
         "List repository branches for a GitLab project with search or regex filtering.",
-      inputSchema: listProjectBranchesParameters.shape
+      inputSchema: listProjectBranchesParameters.shape,
+      outputSchema: listOutput,
+      annotations: readOnly
     },
     async (params: ListProjectBranchesParameters) => {
       const branches = await client.listProjectBranches(params);
@@ -228,7 +292,9 @@ export const registerGitLabTools = (
       title: "List GitLab Commits",
       description:
         "List repository commits for a GitLab project, optionally filtered by ref, path, author, and date range.",
-      inputSchema: listCommitsParameters.shape
+      inputSchema: listCommitsParameters.shape,
+      outputSchema: listOutput,
+      annotations: readOnly
     },
     async (params: ListCommitsParameters) => {
       const commits = await client.listCommits(params);
@@ -242,7 +308,9 @@ export const registerGitLabTools = (
       title: "Get GitLab Repository File",
       description:
         "Fetch a repository file by project, path, and ref. Base64 content is hidden by default and decoded text is returned when under the configured size limit.",
-      inputSchema: getFileParameters.shape
+      inputSchema: getFileParameters.shape,
+      outputSchema: fileOutput,
+      annotations: readOnly
     },
     async (params: GetFileParameters) => {
       const file = await client.getFile(params);
@@ -260,7 +328,9 @@ export const registerGitLabTools = (
       title: "List GitLab Pipelines",
       description:
         "List CI/CD pipelines for a GitLab project with ref, status, source, and updated date filters.",
-      inputSchema: listPipelinesParameters.shape
+      inputSchema: listPipelinesParameters.shape,
+      outputSchema: listOutput,
+      annotations: readOnly
     },
     async (params: ListPipelinesParameters) => {
       const pipelines = await client.listPipelines(params);
@@ -274,7 +344,9 @@ export const registerGitLabTools = (
       title: "Get GitLab Pipeline Jobs",
       description:
         "List jobs for a GitLab pipeline, optionally including retried jobs and filtering by job status.",
-      inputSchema: getPipelineJobsParameters.shape
+      inputSchema: getPipelineJobsParameters.shape,
+      outputSchema: listOutput,
+      annotations: readOnly
     },
     async (params: GetPipelineJobsParameters) => {
       const jobs = await client.getPipelineJobs(params);
@@ -288,7 +360,9 @@ export const registerGitLabTools = (
       title: "Create GitLab Issue",
       description:
         "Create a GitLab issue. Requires GITLAB_ENABLE_WRITE_TOOLS=true.",
-      inputSchema: createIssueParameters.shape
+      inputSchema: createIssueParameters.shape,
+      outputSchema: issueOutput,
+      annotations: writeCreate
     },
     async (params: CreateIssueParameters) => {
       assertWriteEnabled(config);
@@ -303,7 +377,9 @@ export const registerGitLabTools = (
       title: "Create GitLab Merge Request",
       description:
         "Create a GitLab merge request. Requires GITLAB_ENABLE_WRITE_TOOLS=true.",
-      inputSchema: createMergeRequestParameters.shape
+      inputSchema: createMergeRequestParameters.shape,
+      outputSchema: mergeRequestOutput,
+      annotations: writeCreate
     },
     async (params: CreateMergeRequestParameters) => {
       assertWriteEnabled(config);
@@ -318,7 +394,9 @@ export const registerGitLabTools = (
       title: "Create GitLab Issue Note",
       description:
         "Create a comment on a GitLab issue. Requires GITLAB_ENABLE_WRITE_TOOLS=true.",
-      inputSchema: createIssueNoteParameters.shape
+      inputSchema: createIssueNoteParameters.shape,
+      outputSchema: noteOutput,
+      annotations: writeCreate
     },
     async (params: CreateIssueNoteParameters) => {
       assertWriteEnabled(config);
@@ -333,7 +411,9 @@ export const registerGitLabTools = (
       title: "Create GitLab Merge Request Note",
       description:
         "Create a comment on a GitLab merge request. Requires GITLAB_ENABLE_WRITE_TOOLS=true.",
-      inputSchema: createMergeRequestNoteParameters.shape
+      inputSchema: createMergeRequestNoteParameters.shape,
+      outputSchema: noteOutput,
+      annotations: writeCreate
     },
     async (params: CreateMergeRequestNoteParameters) => {
       assertWriteEnabled(config);
@@ -348,7 +428,9 @@ export const registerGitLabTools = (
       title: "Approve GitLab Merge Request",
       description:
         "Approve a GitLab merge request as the authenticated user. Requires GITLAB_ENABLE_WRITE_TOOLS=true.",
-      inputSchema: approveMergeRequestParameters.shape
+      inputSchema: approveMergeRequestParameters.shape,
+      outputSchema: mergeRequestOutput,
+      annotations: approveWrite
     },
     async (params: ApproveMergeRequestParameters) => {
       assertWriteEnabled(config);
@@ -363,7 +445,9 @@ export const registerGitLabTools = (
       title: "Merge GitLab Merge Request",
       description:
         "Merge a GitLab merge request. Requires GITLAB_ENABLE_WRITE_TOOLS=true.",
-      inputSchema: mergeMergeRequestParameters.shape
+      inputSchema: mergeMergeRequestParameters.shape,
+      outputSchema: mergeRequestOutput,
+      annotations: mergeWrite
     },
     async (params: MergeMergeRequestParameters) => {
       assertWriteEnabled(config);

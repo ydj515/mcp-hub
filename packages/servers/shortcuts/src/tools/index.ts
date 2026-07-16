@@ -1,4 +1,5 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { z } from "zod";
 import {
   listShortcutCategories,
   searchShortcuts,
@@ -9,12 +10,31 @@ import {
   type SearchShortcutsParameters
 } from "./schemas.js";
 
+// 정적 단축키 데이터만 조회하므로 모든 tool이 read-only이고 외부 시스템과 무관합니다.
+const readOnly = {
+  readOnlyHint: true,
+  openWorldHint: false
+} as const;
+
+const categoriesOutput = {
+  categories: z.array(z.unknown())
+};
+
+const searchOutput = {
+  query: z.string(),
+  category: z.string().nullable(),
+  platform: z.enum(["mac", "win"]).nullable(),
+  results: z.array(z.unknown())
+};
+
 export const registerShortcutTools = (server: McpServer) => {
   server.registerTool(
     "list_shortcut_categories",
     {
       title: "List Shortcut Categories",
-      description: "List supported shortcut categories"
+      description: "List supported shortcut categories",
+      outputSchema: categoriesOutput,
+      annotations: readOnly
     },
     async () => {
       const categories = listShortcutCategories();
@@ -39,7 +59,9 @@ export const registerShortcutTools = (server: McpServer) => {
     {
       title: "Search Shortcuts",
       description: "Search keyboard shortcuts by query and optional filters.",
-      inputSchema: searchShortcutsParameters.shape
+      inputSchema: searchShortcutsParameters.shape,
+      outputSchema: searchOutput,
+      annotations: readOnly
     },
     async ({
       query,
