@@ -19,6 +19,20 @@ import {
   type WriteQueryParameter
 } from "./schemas.js";
 
+// introspection·조회·EXPLAIN·진단 tool은 데이터를 바꾸지 않으며 특정 DB에 국한됩니다.
+const readOnly = {
+  readOnlyHint: true,
+  openWorldHint: false
+} as const;
+
+// run_write_query는 허용된 DML/유지보수 문을 실행하므로 파괴적이고 멱등하지 않습니다.
+const writeQuery = {
+  readOnlyHint: false,
+  destructiveHint: true,
+  idempotentHint: false,
+  openWorldHint: false
+} as const;
+
 const validateSchema = (schema: string, config: PostgresConfig) => {
   if (!config.allowedSchemas.includes(schema)) {
     throw new Error(
@@ -58,7 +72,8 @@ export const registerPostgresTools = (
     {
       title: "List Tables",
       description: "List tables in an allowed PostgreSQL schema.",
-      inputSchema: schemaParameter.shape
+      inputSchema: schemaParameter.shape,
+      annotations: readOnly
     },
     async ({ schema = defaultSchema(config) }: SchemaParameter) => {
       validateSchema(schema, config);
@@ -80,7 +95,8 @@ export const registerPostgresTools = (
     {
       title: "Describe Table",
       description: "Describe columns for a PostgreSQL table.",
-      inputSchema: tableParameter.shape
+      inputSchema: tableParameter.shape,
+      annotations: readOnly
     },
     async ({ schema = defaultSchema(config), table_name }: TableParameter) => {
       validateSchema(schema, config);
@@ -102,7 +118,8 @@ export const registerPostgresTools = (
     {
       title: "Run Query",
       description: "Run a read-only SQL query.",
-      inputSchema: queryParameter.shape
+      inputSchema: queryParameter.shape,
+      annotations: readOnly
     },
     async ({ sql }: QueryParameter) => {
       const rows = await db.runReadOnlyQuery(sql);
@@ -132,7 +149,8 @@ export const registerPostgresTools = (
       title: "Run Write Query",
       description:
         "Run one permitted PostgreSQL DML or maintenance statement. Requires POSTGRES_ENABLE_WRITE_TOOLS=true.",
-      inputSchema: writeQueryParameter.shape
+      inputSchema: writeQueryParameter.shape,
+      annotations: writeQuery
     },
     async ({ sql }: WriteQueryParameter) => {
       assertWriteToolsEnabled(config);
@@ -155,7 +173,8 @@ export const registerPostgresTools = (
     {
       title: "Get Server Capabilities",
       description:
-        "Return PostgreSQL version, current database, encoding, and installed extensions."
+        "Return PostgreSQL version, current database, encoding, and installed extensions.",
+      annotations: readOnly
     },
     async () => {
       const capabilities = await db.getServerCapabilities();
@@ -169,7 +188,8 @@ export const registerPostgresTools = (
       title: "Get Indexes",
       description:
         "List PostgreSQL index definitions, key parts, access methods, uniqueness, validity, predicates, and INCLUDE columns for a table.",
-      inputSchema: tableParameter.shape
+      inputSchema: tableParameter.shape,
+      annotations: readOnly
     },
     async ({ schema = defaultSchema(config), table_name }: TableParameter) => {
       validateSchema(schema, config);
@@ -184,7 +204,8 @@ export const registerPostgresTools = (
       title: "Get Constraints",
       description:
         "List PostgreSQL primary key, unique, foreign key, and check constraints for a table.",
-      inputSchema: tableParameter.shape
+      inputSchema: tableParameter.shape,
+      annotations: readOnly
     },
     async ({ schema = defaultSchema(config), table_name }: TableParameter) => {
       validateSchema(schema, config);
@@ -199,7 +220,8 @@ export const registerPostgresTools = (
       title: "Get Partitions",
       description:
         "List all PostgreSQL descendant partitions, partition key, parent, boundary, and tree depth for a table.",
-      inputSchema: tableParameter.shape
+      inputSchema: tableParameter.shape,
+      annotations: readOnly
     },
     async ({ schema = defaultSchema(config), table_name }: TableParameter) => {
       validateSchema(schema, config);
@@ -214,7 +236,8 @@ export const registerPostgresTools = (
       title: "Get Table Size",
       description:
         "Return PostgreSQL estimated rows and table, index, and total relation sizes in bytes and readable units.",
-      inputSchema: tableParameter.shape
+      inputSchema: tableParameter.shape,
+      annotations: readOnly
     },
     async ({ schema = defaultSchema(config), table_name }: TableParameter) => {
       validateSchema(schema, config);
@@ -229,7 +252,8 @@ export const registerPostgresTools = (
       title: "List Database Objects",
       description:
         "List PostgreSQL tables, views, materialized views, sequences, functions, procedures, and triggers in an allowed schema.",
-      inputSchema: schemaParameter.shape
+      inputSchema: schemaParameter.shape,
+      annotations: readOnly
     },
     async ({ schema = defaultSchema(config) }: SchemaParameter) => {
       validateSchema(schema, config);
@@ -244,7 +268,8 @@ export const registerPostgresTools = (
       title: "Get Index Usage",
       description:
         "Return PostgreSQL cumulative index scan and tuple counters. Statistics reset and workload patterns must be considered before removing an index.",
-      inputSchema: indexUsageParameter.shape
+      inputSchema: indexUsageParameter.shape,
+      annotations: readOnly
     },
     async ({
       schema = defaultSchema(config),
@@ -267,7 +292,8 @@ export const registerPostgresTools = (
       title: "List Active Queries",
       description:
         "List non-idle PostgreSQL queries in the current database. Requires POSTGRES_ENABLE_DIAGNOSTIC_TOOLS=true. Query text is truncated to 1,000 characters and visibility depends on pg_stat_activity privileges.",
-      inputSchema: activityParameter.shape
+      inputSchema: activityParameter.shape,
+      annotations: readOnly
     },
     async ({ limit = 50 }: ActivityParameter) => {
       assertDiagnosticToolsEnabled(config);
@@ -282,7 +308,8 @@ export const registerPostgresTools = (
       title: "Get Locks",
       description:
         "List PostgreSQL relation locks in an allowed schema with waiting state and blocking backend IDs. Requires POSTGRES_ENABLE_DIAGNOSTIC_TOOLS=true. Query text is truncated to 1,000 characters.",
-      inputSchema: schemaActivityParameter.shape
+      inputSchema: schemaActivityParameter.shape,
+      annotations: readOnly
     },
     async ({
       schema = defaultSchema(config),
@@ -300,7 +327,8 @@ export const registerPostgresTools = (
     {
       title: "Get Foreign Keys",
       description: "List foreign keys for a PostgreSQL table.",
-      inputSchema: tableParameter.shape
+      inputSchema: tableParameter.shape,
+      annotations: readOnly
     },
     async ({ schema = defaultSchema(config), table_name }: TableParameter) => {
       validateSchema(schema, config);
@@ -322,7 +350,8 @@ export const registerPostgresTools = (
     {
       title: "Explain Query",
       description: "Return EXPLAIN JSON for a read-only SQL query.",
-      inputSchema: queryParameter.shape
+      inputSchema: queryParameter.shape,
+      annotations: readOnly
     },
     async ({ sql }: QueryParameter) => {
       const plan = await db.explainQuery(sql);
@@ -338,7 +367,8 @@ export const registerPostgresTools = (
     {
       title: "Get Table Stats",
       description: "Return PostgreSQL table statistics.",
-      inputSchema: tableParameter.shape
+      inputSchema: tableParameter.shape,
+      annotations: readOnly
     },
     async ({ schema = defaultSchema(config), table_name }: TableParameter) => {
       validateSchema(schema, config);

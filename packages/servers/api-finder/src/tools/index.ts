@@ -10,6 +10,12 @@ import {
   type SearchParameters,
 } from "./schemas.js";
 
+// data.go.kr 외부 공공데이터 API를 조회만 하므로 read-only이며 외부 세계와 상호작용합니다.
+const readOnly = {
+  readOnlyHint: true,
+  openWorldHint: true,
+} as const;
+
 export const registerApiFinderTools = (
   server: McpServer,
   env: NodeJS.ProcessEnv,
@@ -21,6 +27,7 @@ export const registerApiFinderTools = (
       description:
         "Search data.go.kr public APIs for a service idea and keywords.",
       inputSchema: searchParameters.shape,
+      annotations: readOnly,
     },
     async ({ keywords }: SearchParameters) => {
       const apiKey = env.PUBLIC_DATA_API_KEY;
@@ -43,6 +50,7 @@ export const registerApiFinderTools = (
       description:
         "Fetch the Swagger/OpenAPI specification for a selected public API.",
       inputSchema: detailsParameters.shape,
+      annotations: readOnly,
     },
     async ({ api_id }: DetailsParameters) => {
       const spec = await getPublicDataApiDetails(api_id);

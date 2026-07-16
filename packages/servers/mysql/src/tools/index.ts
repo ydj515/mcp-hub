@@ -17,6 +17,20 @@ import {
   type WriteQueryParameter
 } from "./schemas.js";
 
+// introspection·조회·EXPLAIN·진단 tool은 데이터를 바꾸지 않으며 특정 DB에 국한됩니다.
+const readOnly = {
+  readOnlyHint: true,
+  openWorldHint: false
+} as const;
+
+// run_write_query는 허용된 DML/유지보수 문을 실행하므로 파괴적이고 멱등하지 않습니다.
+const writeQuery = {
+  readOnlyHint: false,
+  destructiveHint: true,
+  idempotentHint: false,
+  openWorldHint: false
+} as const;
+
 const validateSchema = (schema: string, config: MySqlConfig) => {
   if (!config.allowedSchemas.includes(schema)) {
     throw new Error(
@@ -56,7 +70,8 @@ export const registerMySqlTools = (
     {
       title: "List Tables",
       description: "List tables in an allowed MySQL schema.",
-      inputSchema: schemaParameter.shape
+      inputSchema: schemaParameter.shape,
+      annotations: readOnly
     },
     async ({ schema = defaultSchema(config) }: SchemaParameter) => {
       validateSchema(schema, config);
@@ -78,7 +93,8 @@ export const registerMySqlTools = (
     {
       title: "Describe Table",
       description: "Describe columns for a MySQL table.",
-      inputSchema: tableParameter.shape
+      inputSchema: tableParameter.shape,
+      annotations: readOnly
     },
     async ({ schema = defaultSchema(config), table_name }: TableParameter) => {
       validateSchema(schema, config);
@@ -100,7 +116,8 @@ export const registerMySqlTools = (
     {
       title: "Run Query",
       description: "Run a read-only MySQL query.",
-      inputSchema: queryParameter.shape
+      inputSchema: queryParameter.shape,
+      annotations: readOnly
     },
     async ({ sql }: QueryParameter) => {
       const rows = await db.runReadOnlyQuery(sql);
@@ -129,7 +146,8 @@ export const registerMySqlTools = (
     {
       title: "Get Server Capabilities",
       description:
-        "Return MySQL version, SQL mode, default storage engine, and available storage engines."
+        "Return MySQL version, SQL mode, default storage engine, and available storage engines.",
+      annotations: readOnly
     },
     async () => {
       const capabilities = await db.getServerCapabilities();
@@ -143,7 +161,8 @@ export const registerMySqlTools = (
       title: "Get Indexes",
       description:
         "List MySQL index key parts, uniqueness, type, cardinality, visibility, and functional expressions for a table.",
-      inputSchema: tableParameter.shape
+      inputSchema: tableParameter.shape,
+      annotations: readOnly
     },
     async ({ schema = defaultSchema(config), table_name }: TableParameter) => {
       validateSchema(schema, config);
@@ -158,7 +177,8 @@ export const registerMySqlTools = (
       title: "Get Constraints",
       description:
         "List MySQL primary key, unique, foreign key, and check constraints for a table.",
-      inputSchema: tableParameter.shape
+      inputSchema: tableParameter.shape,
+      annotations: readOnly
     },
     async ({ schema = defaultSchema(config), table_name }: TableParameter) => {
       validateSchema(schema, config);
@@ -173,7 +193,8 @@ export const registerMySqlTools = (
       title: "Get Partitions",
       description:
         "List MySQL partition and subpartition definitions, bounds, and estimated sizes for a table.",
-      inputSchema: tableParameter.shape
+      inputSchema: tableParameter.shape,
+      annotations: readOnly
     },
     async ({ schema = defaultSchema(config), table_name }: TableParameter) => {
       validateSchema(schema, config);
@@ -188,7 +209,8 @@ export const registerMySqlTools = (
       title: "Get Table Size",
       description:
         "Return MySQL estimated rows and data, index, free-space, and total table sizes in bytes.",
-      inputSchema: tableParameter.shape
+      inputSchema: tableParameter.shape,
+      annotations: readOnly
     },
     async ({ schema = defaultSchema(config), table_name }: TableParameter) => {
       validateSchema(schema, config);
@@ -203,7 +225,8 @@ export const registerMySqlTools = (
       title: "Get Table Stats",
       description:
         "Return MySQL storage engine, estimated rows, row length, allocation, and maintenance timestamps for a table.",
-      inputSchema: tableParameter.shape
+      inputSchema: tableParameter.shape,
+      annotations: readOnly
     },
     async ({ schema = defaultSchema(config), table_name }: TableParameter) => {
       validateSchema(schema, config);
@@ -218,7 +241,8 @@ export const registerMySqlTools = (
       title: "List Database Objects",
       description:
         "List MySQL tables, views, triggers, routines, and events in an allowed schema.",
-      inputSchema: schemaParameter.shape
+      inputSchema: schemaParameter.shape,
+      annotations: readOnly
     },
     async ({ schema = defaultSchema(config) }: SchemaParameter) => {
       validateSchema(schema, config);
@@ -233,7 +257,8 @@ export const registerMySqlTools = (
       title: "List Active Queries",
       description:
         "List non-sleeping MySQL queries in allowed schemas. Requires MYSQL_ENABLE_DIAGNOSTIC_TOOLS=true. Query text is truncated to 1,000 characters.",
-      inputSchema: activityParameter.shape
+      inputSchema: activityParameter.shape,
+      annotations: readOnly
     },
     async ({ limit = 50 }: ActivityParameter) => {
       assertDiagnosticToolsEnabled(config);
@@ -248,7 +273,8 @@ export const registerMySqlTools = (
       title: "Get Locks",
       description:
         "List MySQL InnoDB locks for an allowed schema using Performance Schema. Requires MYSQL_ENABLE_DIAGNOSTIC_TOOLS=true and access to performance_schema.data_locks.",
-      inputSchema: schemaActivityParameter.shape
+      inputSchema: schemaActivityParameter.shape,
+      annotations: readOnly
     },
     async ({
       schema = defaultSchema(config),
@@ -267,7 +293,8 @@ export const registerMySqlTools = (
       title: "Run Write Query",
       description:
         "Run one permitted MySQL DML or maintenance statement. Requires MYSQL_ENABLE_WRITE_TOOLS=true.",
-      inputSchema: writeQueryParameter.shape
+      inputSchema: writeQueryParameter.shape,
+      annotations: writeQuery
     },
     async ({ sql }: WriteQueryParameter) => {
       assertWriteToolsEnabled(config);
@@ -289,7 +316,8 @@ export const registerMySqlTools = (
     {
       title: "Get Foreign Keys",
       description: "List foreign keys for a MySQL table.",
-      inputSchema: tableParameter.shape
+      inputSchema: tableParameter.shape,
+      annotations: readOnly
     },
     async ({ schema = defaultSchema(config), table_name }: TableParameter) => {
       validateSchema(schema, config);
@@ -311,7 +339,8 @@ export const registerMySqlTools = (
     {
       title: "Explain Query",
       description: "Return EXPLAIN JSON for a read-only MySQL query.",
-      inputSchema: queryParameter.shape
+      inputSchema: queryParameter.shape,
+      annotations: readOnly
     },
     async ({ sql }: QueryParameter) => {
       const plan = await db.explainQuery(sql);

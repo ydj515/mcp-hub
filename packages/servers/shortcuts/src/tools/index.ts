@@ -9,12 +9,19 @@ import {
   type SearchShortcutsParameters
 } from "./schemas.js";
 
+// 정적 단축키 데이터만 조회하므로 모든 tool이 read-only이고 외부 시스템과 무관합니다.
+const readOnly = {
+  readOnlyHint: true,
+  openWorldHint: false
+} as const;
+
 export const registerShortcutTools = (server: McpServer) => {
   server.registerTool(
     "list_shortcut_categories",
     {
       title: "List Shortcut Categories",
-      description: "List supported shortcut categories"
+      description: "List supported shortcut categories",
+      annotations: readOnly
     },
     async () => {
       const categories = listShortcutCategories();
@@ -39,7 +46,8 @@ export const registerShortcutTools = (server: McpServer) => {
     {
       title: "Search Shortcuts",
       description: "Search keyboard shortcuts by query and optional filters.",
-      inputSchema: searchShortcutsParameters.shape
+      inputSchema: searchShortcutsParameters.shape,
+      annotations: readOnly
     },
     async ({
       query,
