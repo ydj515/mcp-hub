@@ -15,7 +15,7 @@ npm run build
 
 export MCP_HUB_TOKEN="$(openssl rand -base64 32)"
 export PUBLIC_DATA_API_KEY="..."
-export POSTGRESQL_URL="postgresql://readonly:password@localhost:5432/app"
+export POSTGRES_URL="postgresql://readonly:password@localhost:5432/app"
 export MYSQL_URL="mysql://readonly:password@localhost:3306/app"
 export POSTGRES_ENABLE_DIAGNOSTIC_TOOLS="false"
 export MYSQL_ENABLE_DIAGNOSTIC_TOOLS="false"
@@ -85,7 +85,7 @@ curl -H "Authorization: Bearer $MCP_HUB_TOKEN" \
 
 ## 클라이언트 설정
 
-클라이언트 PC에는 DB·Redis URL, 공공데이터 API key, GitLab token을 둘 필요가 없습니다. remote MCP server에만 `POSTGRESQL_URL`, `MYSQL_URL`, `REDIS_URL`, `PUBLIC_DATA_API_KEY`, `GITLAB_TOKEN`, `GITLAB_URL`을 두고, 클라이언트에는 remote URL과 `MCP_HUB_TOKEN`만 설정합니다. Docker MCP는 remote server 프로세스의 Docker CLI context를 사용하므로 Docker socket·context 설정도 remote 서버에만 둡니다.
+클라이언트 PC에는 DB·Redis URL, 공공데이터 API key, GitLab token을 둘 필요가 없습니다. remote MCP server에만 `POSTGRES_URL`, `MYSQL_URL`, `REDIS_URL`, `PUBLIC_DATA_API_KEY`, `GITLAB_TOKEN`, `GITLAB_URL`을 두고, 클라이언트에는 remote URL과 `MCP_HUB_TOKEN`만 설정합니다. Docker MCP는 remote server 프로세스의 Docker CLI context를 사용하므로 Docker socket·context 설정도 remote 서버에만 둡니다.
 
 ```bash
 export MCP_HUB_TOKEN="remote-server와-같은-토큰"
@@ -119,7 +119,7 @@ export MCP_HUB_TOKEN="remote-server와-같은-토큰"
 - `docker`는 기본 조회 전용으로 두고 `DOCKER_ENABLE_WRITE_TOOLS=false`를 유지합니다. 컨테이너 시작·재시작·명령 실행, Compose lifecycle·service exec, image pull/build, service scale이 필요한 개발 환경에서만 `true`로 바꾸고, `DOCKER_ALLOWED_CONTAINERS`, `DOCKER_ALLOWED_NETWORKS`, `DOCKER_ALLOWED_VOLUMES`, `DOCKER_COMPOSE_PROJECTS`로 대상과 프로젝트 디렉터리를 제한하세요. Docker daemon 권한은 호스트에 높은 권한을 줄 수 있으므로 public remote endpoint와 Docker socket을 직접 결합하지 않습니다.
 - `docker`의 Compose port·process·healthcheck·events, network inspect, volume inspect 조회 응답에는 host binding, command, argument, IP 주소, mountpoint, healthcheck log가 들어갈 수 있습니다. remote endpoint에서는 Compose·network·volume allowlist와 인증 범위를 좁게 유지하세요.
 - `gitlab`은 필요한 scope만 가진 access token을 사용하고, self-hosted instance는 `GITLAB_URL`로 명시합니다. create/comment/approve/merge tool은 `GITLAB_ENABLE_WRITE_TOOLS=true`일 때만 실행됩니다.
-- `ALLOWED_SCHEMAS`, `MYSQL_ALLOWED_SCHEMAS`, row limit, query timeout을 설정해 노출 범위를 줄입니다.
+- `POSTGRES_ALLOWED_SCHEMAS`, `MYSQL_ALLOWED_SCHEMAS`, row limit, query timeout을 설정해 노출 범위를 줄입니다.
 - 필요하면 endpoint별로 별도 토큰을 적용할 수 있도록 reverse proxy layer에서 추가 인증을 둡니다.
 
 ## 참고 문서

@@ -23,7 +23,7 @@
       "command": "npx",
       "args": ["-y", "mcp-hub", "stdio", "postgres"],
       "env": {
-        "POSTGRESQL_URL": "${POSTGRESQL_URL}"
+        "POSTGRES_URL": "${POSTGRES_URL}"
       }
     },
     "mcp-hub-redis": {

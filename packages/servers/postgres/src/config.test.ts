@@ -4,7 +4,7 @@ import { loadPostgresConfig } from "./config.js";
 describe("loadPostgresConfig", () => {
   it("loads defaults", () => {
     const config = loadPostgresConfig({
-      POSTGRESQL_URL: "postgresql://readonly:pw@localhost:5432/app"
+      POSTGRES_URL: "postgresql://readonly:pw@localhost:5432/app"
     });
 
     expect(config).toEqual({
@@ -20,7 +20,7 @@ describe("loadPostgresConfig", () => {
 
   it("enables write tools explicitly", () => {
     const config = loadPostgresConfig({
-      POSTGRESQL_URL: "postgresql://writer:pw@localhost:5432/app",
+      POSTGRES_URL: "postgresql://writer:pw@localhost:5432/app",
       POSTGRES_ENABLE_WRITE_TOOLS: "true"
     });
 
@@ -29,23 +29,23 @@ describe("loadPostgresConfig", () => {
 
   it("enables diagnostic tools explicitly", () => {
     const config = loadPostgresConfig({
-      POSTGRESQL_URL: "postgresql://readonly:pw@localhost:5432/app",
+      POSTGRES_URL: "postgresql://readonly:pw@localhost:5432/app",
       POSTGRES_ENABLE_DIAGNOSTIC_TOOLS: "true"
     });
 
     expect(config.enableDiagnosticTools).toBe(true);
   });
 
-  it("throws when POSTGRESQL_URL is missing", () => {
-    expect(() => loadPostgresConfig({})).toThrow("POSTGRESQL_URL is required");
+  it("throws when POSTGRES_URL is missing", () => {
+    expect(() => loadPostgresConfig({})).toThrow("POSTGRES_URL is required");
   });
 
-  it("throws when ALLOWED_SCHEMAS is empty", () => {
+  it("throws when POSTGRES_ALLOWED_SCHEMAS is empty", () => {
     expect(() =>
       loadPostgresConfig({
-        POSTGRESQL_URL: "postgresql://readonly:pw@localhost:5432/app",
-        ALLOWED_SCHEMAS: ","
+        POSTGRES_URL: "postgresql://readonly:pw@localhost:5432/app",
+        POSTGRES_ALLOWED_SCHEMAS: ","
       })
-    ).toThrow("ALLOWED_SCHEMAS must include at least one schema");
+    ).toThrow("POSTGRES_ALLOWED_SCHEMAS must include at least one schema");
   });
 });

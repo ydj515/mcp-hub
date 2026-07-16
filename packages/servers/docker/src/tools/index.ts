@@ -1,3 +1,4 @@
+import { assertFeatureEnabled } from "@mcp-hub/core";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { DockerConfig } from "../config.js";
 import type { DockerService } from "../services/docker-client.js";
@@ -8,13 +9,11 @@ const response = <T extends object>(value: T) => ({
   structuredContent: value
 });
 
-const assertWriteToolsEnabled = (config: DockerConfig) => {
-  if (!config.enableWriteTools) {
-    throw new Error(
-      "DOCKER_ENABLE_WRITE_TOOLS=true is required to use start_container, restart_container, and exec_container."
-    );
-  }
-};
+const assertWriteToolsEnabled = (config: DockerConfig) =>
+  assertFeatureEnabled(
+    config.enableWriteTools,
+    "DOCKER_ENABLE_WRITE_TOOLS=true is required to use start_container, restart_container, and exec_container."
+  );
 
 export const registerDockerTools = (
   server: McpServer,
