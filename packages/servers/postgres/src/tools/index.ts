@@ -1,5 +1,6 @@
 import { assertFeatureEnabled } from "@mcp-hub/core";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { z } from "zod";
 import type { PostgresConfig } from "../config.js";
 import type { PostgresDatabase } from "../services/database.js";
 import {
@@ -32,6 +33,45 @@ const writeQuery = {
   idempotentHint: false,
   openWorldHint: false
 } as const;
+
+// outputSchema는 각 tool의 최상위 구조를 알리고, 배열/객체 페이로드는 loose하게 둡니다.
+const rows = z.array(z.unknown());
+const tableItemsOutput = (key: string) => ({
+  table: z.string(),
+  [key]: rows
+});
+const listTablesOutput = {
+  schema: z.string(),
+  table_count: z.number(),
+  tables: rows
+};
+const describeTableOutput = tableItemsOutput("columns");
+const runQueryOutput = {
+  row_count: z.number(),
+  max_rows: z.number(),
+  rows
+};
+const runWriteQueryOutput = {
+  command: z.unknown(),
+  affected_rows: z.unknown(),
+  row_count: z.number(),
+  rows
+};
+const capabilitiesOutput = { capabilities: z.unknown() };
+const listDatabaseObjectsOutput = {
+  schema: z.string(),
+  object_count: z.number(),
+  objects: rows
+};
+const indexUsageOutput = {
+  schema: z.string(),
+  table_name: z.unknown(),
+  index_usage_count: z.number(),
+  index_usage: rows
+};
+const activeQueriesOutput = { query_count: z.number(), queries: rows };
+const locksOutput = { schema: z.string(), lock_count: z.number(), locks: rows };
+const explainOutput = { plan: z.unknown() };
 
 const validateSchema = (schema: string, config: PostgresConfig) => {
   if (!config.allowedSchemas.includes(schema)) {
@@ -73,20 +113,13 @@ export const registerPostgresTools = (
       title: "List Tables",
       description: "List tables in an allowed PostgreSQL schema.",
       inputSchema: schemaParameter.shape,
+      outputSchema: listTablesOutput,
       annotations: readOnly
     },
     async ({ schema = defaultSchema(config) }: SchemaParameter) => {
       validateSchema(schema, config);
       const tables = await db.listTables(schema);
-      return {
-        content: [
-          {
-            type: "text",
-            text: jsonText({ schema, table_count: tables.length, tables })
-          }
-        ],
-        structuredContent: { schema, table_count: tables.length, tables }
-      };
+      return toolResult({ schema, table_count: tables.length, tables });
     }
   );
 
@@ -96,20 +129,13 @@ export const registerPostgresTools = (
       title: "Describe Table",
       description: "Describe columns for a PostgreSQL table.",
       inputSchema: tableParameter.shape,
+      outputSchema: describeTableOutput,
       annotations: readOnly
     },
     async ({ schema = defaultSchema(config), table_name }: TableParameter) => {
       validateSchema(schema, config);
       const columns = await db.describeTable(schema, table_name);
-      return {
-        content: [
-          {
-            type: "text",
-            text: jsonText({ table: `${schema}.${table_name}`, columns })
-          }
-        ],
-        structuredContent: { table: `${schema}.${table_name}`, columns }
-      };
+      return toolResult({ table: `${schema}.${table_name}`, columns });
     }
   );
 
@@ -119,27 +145,16 @@ export const registerPostgresTools = (
       title: "Run Query",
       description: "Run a read-only SQL query.",
       inputSchema: queryParameter.shape,
+      outputSchema: runQueryOutput,
       annotations: readOnly
     },
     async ({ sql }: QueryParameter) => {
       const rows = await db.runReadOnlyQuery(sql);
-      return {
-        content: [
-          {
-            type: "text",
-            text: jsonText({
-              row_count: rows.length,
-              max_rows: config.maxRows,
-              rows
-            })
-          }
-        ],
-        structuredContent: {
-          row_count: rows.length,
-          max_rows: config.maxRows,
-          rows
-        }
-      };
+      return toolResult({
+        row_count: rows.length,
+        max_rows: config.maxRows,
+        rows
+      });
     }
   );
 
@@ -150,21 +165,18 @@ export const registerPostgresTools = (
       description:
         "Run one permitted PostgreSQL DML or maintenance statement. Requires POSTGRES_ENABLE_WRITE_TOOLS=true.",
       inputSchema: writeQueryParameter.shape,
+      outputSchema: runWriteQueryOutput,
       annotations: writeQuery
     },
     async ({ sql }: WriteQueryParameter) => {
       assertWriteToolsEnabled(config);
       const result = await db.runWriteQuery(sql);
-      const payload = {
+      return toolResult({
         command: result.command,
         affected_rows: result.affectedRows,
         row_count: result.rows.length,
         rows: result.rows
-      };
-      return {
-        content: [{ type: "text", text: jsonText(payload) }],
-        structuredContent: payload
-      };
+      });
     }
   );
 
@@ -174,6 +186,7 @@ export const registerPostgresTools = (
       title: "Get Server Capabilities",
       description:
         "Return PostgreSQL version, current database, encoding, and installed extensions.",
+      outputSchema: capabilitiesOutput,
       annotations: readOnly
     },
     async () => {
@@ -189,6 +202,7 @@ export const registerPostgresTools = (
       description:
         "List PostgreSQL index definitions, key parts, access methods, uniqueness, validity, predicates, and INCLUDE columns for a table.",
       inputSchema: tableParameter.shape,
+      outputSchema: tableItemsOutput("indexes"),
       annotations: readOnly
     },
     async ({ schema = defaultSchema(config), table_name }: TableParameter) => {
@@ -205,6 +219,7 @@ export const registerPostgresTools = (
       description:
         "List PostgreSQL primary key, unique, foreign key, and check constraints for a table.",
       inputSchema: tableParameter.shape,
+      outputSchema: tableItemsOutput("constraints"),
       annotations: readOnly
     },
     async ({ schema = defaultSchema(config), table_name }: TableParameter) => {
@@ -221,6 +236,7 @@ export const registerPostgresTools = (
       description:
         "List all PostgreSQL descendant partitions, partition key, parent, boundary, and tree depth for a table.",
       inputSchema: tableParameter.shape,
+      outputSchema: tableItemsOutput("partitions"),
       annotations: readOnly
     },
     async ({ schema = defaultSchema(config), table_name }: TableParameter) => {
@@ -237,6 +253,7 @@ export const registerPostgresTools = (
       description:
         "Return PostgreSQL estimated rows and table, index, and total relation sizes in bytes and readable units.",
       inputSchema: tableParameter.shape,
+      outputSchema: { table: z.string(), size: z.unknown() },
       annotations: readOnly
     },
     async ({ schema = defaultSchema(config), table_name }: TableParameter) => {
@@ -253,6 +270,7 @@ export const registerPostgresTools = (
       description:
         "List PostgreSQL tables, views, materialized views, sequences, functions, procedures, and triggers in an allowed schema.",
       inputSchema: schemaParameter.shape,
+      outputSchema: listDatabaseObjectsOutput,
       annotations: readOnly
     },
     async ({ schema = defaultSchema(config) }: SchemaParameter) => {
@@ -269,6 +287,7 @@ export const registerPostgresTools = (
       description:
         "Return PostgreSQL cumulative index scan and tuple counters. Statistics reset and workload patterns must be considered before removing an index.",
       inputSchema: indexUsageParameter.shape,
+      outputSchema: indexUsageOutput,
       annotations: readOnly
     },
     async ({
@@ -293,6 +312,7 @@ export const registerPostgresTools = (
       description:
         "List non-idle PostgreSQL queries in the current database. Requires POSTGRES_ENABLE_DIAGNOSTIC_TOOLS=true. Query text is truncated to 1,000 characters and visibility depends on pg_stat_activity privileges.",
       inputSchema: activityParameter.shape,
+      outputSchema: activeQueriesOutput,
       annotations: readOnly
     },
     async ({ limit = 50 }: ActivityParameter) => {
@@ -309,6 +329,7 @@ export const registerPostgresTools = (
       description:
         "List PostgreSQL relation locks in an allowed schema with waiting state and blocking backend IDs. Requires POSTGRES_ENABLE_DIAGNOSTIC_TOOLS=true. Query text is truncated to 1,000 characters.",
       inputSchema: schemaActivityParameter.shape,
+      outputSchema: locksOutput,
       annotations: readOnly
     },
     async ({
@@ -328,20 +349,13 @@ export const registerPostgresTools = (
       title: "Get Foreign Keys",
       description: "List foreign keys for a PostgreSQL table.",
       inputSchema: tableParameter.shape,
+      outputSchema: tableItemsOutput("foreign_keys"),
       annotations: readOnly
     },
     async ({ schema = defaultSchema(config), table_name }: TableParameter) => {
       validateSchema(schema, config);
       const foreign_keys = await db.getForeignKeys(schema, table_name);
-      return {
-        content: [
-          {
-            type: "text",
-            text: jsonText({ table: `${schema}.${table_name}`, foreign_keys })
-          }
-        ],
-        structuredContent: { table: `${schema}.${table_name}`, foreign_keys }
-      };
+      return toolResult({ table: `${schema}.${table_name}`, foreign_keys });
     }
   );
 
@@ -351,6 +365,7 @@ export const registerPostgresTools = (
       title: "Explain Query",
       description: "Return EXPLAIN JSON for a read-only SQL query.",
       inputSchema: queryParameter.shape,
+      outputSchema: explainOutput,
       annotations: readOnly
     },
     async ({ sql }: QueryParameter) => {
@@ -368,20 +383,13 @@ export const registerPostgresTools = (
       title: "Get Table Stats",
       description: "Return PostgreSQL table statistics.",
       inputSchema: tableParameter.shape,
+      outputSchema: { table: z.string(), stats: z.unknown() },
       annotations: readOnly
     },
     async ({ schema = defaultSchema(config), table_name }: TableParameter) => {
       validateSchema(schema, config);
       const stats = await db.getTableStats(schema, table_name);
-      return {
-        content: [
-          {
-            type: "text",
-            text: jsonText({ table: `${schema}.${table_name}`, stats })
-          }
-        ],
-        structuredContent: { table: `${schema}.${table_name}`, stats }
-      };
+      return toolResult({ table: `${schema}.${table_name}`, stats });
     }
   );
 };

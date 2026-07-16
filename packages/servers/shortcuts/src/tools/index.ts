@@ -1,4 +1,5 @@
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { z } from "zod";
 import {
   listShortcutCategories,
   searchShortcuts,
@@ -15,12 +16,24 @@ const readOnly = {
   openWorldHint: false
 } as const;
 
+const categoriesOutput = {
+  categories: z.array(z.unknown())
+};
+
+const searchOutput = {
+  query: z.string(),
+  category: z.unknown(),
+  platform: z.unknown(),
+  results: z.array(z.unknown())
+};
+
 export const registerShortcutTools = (server: McpServer) => {
   server.registerTool(
     "list_shortcut_categories",
     {
       title: "List Shortcut Categories",
       description: "List supported shortcut categories",
+      outputSchema: categoriesOutput,
       annotations: readOnly
     },
     async () => {
@@ -47,6 +60,7 @@ export const registerShortcutTools = (server: McpServer) => {
       title: "Search Shortcuts",
       description: "Search keyboard shortcuts by query and optional filters.",
       inputSchema: searchShortcutsParameters.shape,
+      outputSchema: searchOutput,
       annotations: readOnly
     },
     async ({

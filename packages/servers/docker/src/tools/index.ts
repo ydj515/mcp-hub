@@ -1,5 +1,6 @@
 import { assertFeatureEnabled } from "@mcp-hub/core";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { z } from "zod";
 import type { DockerConfig } from "../config.js";
 import type { DockerService } from "../services/docker-client.js";
 import { createDockerToolSchemas } from "./schemas.js";
@@ -55,6 +56,13 @@ const buildWrite = {
   openWorldHint: true
 } as const;
 
+// outputSchema는 각 tool 반환의 최상위 구조를 알리고, 컬렉션/객체 페이로드는 loose하게 둡니다.
+const str = z.string();
+const items = z.array(z.unknown());
+const projectOutput = { project: str, output: str };
+const execOutput = { stdout: str, stderr: str };
+const containerActionOutput = { container: str, output: str };
+
 const assertWriteToolsEnabled = (config: DockerConfig) =>
   assertFeatureEnabled(
     config.enableWriteTools,
@@ -76,6 +84,7 @@ export const registerDockerTools = (
     {
       title: "Get Docker Info",
       description: "Read the current Docker Engine and CLI version information.",
+      outputSchema: { info: z.unknown(), version: z.unknown() },
       annotations: readOnly
     },
     async () => response(await docker.getDockerInfo())
@@ -87,6 +96,7 @@ export const registerDockerTools = (
       title: "List Containers",
       description: "List Docker containers in the current Docker context.",
       inputSchema: schemas.listContainers.shape,
+      outputSchema: { containers: items },
       annotations: readOnly
     },
     async ({ all = true }) => response(await docker.listContainers(all))
@@ -98,6 +108,7 @@ export const registerDockerTools = (
       title: "Inspect Container",
       description: "Read detailed Docker metadata for one allowed container.",
       inputSchema: schemas.container.shape,
+      outputSchema: { container: z.unknown() },
       annotations: readOnly
     },
     async ({ container }) => response(await docker.inspectContainer(container))
@@ -109,6 +120,7 @@ export const registerDockerTools = (
       title: "Get Container Logs",
       description: "Read a bounded number of log lines from one allowed container.",
       inputSchema: schemas.logs.shape,
+      outputSchema: { logs: str },
       annotations: readOnly
     },
     async ({ container, tail }) =>
@@ -120,6 +132,7 @@ export const registerDockerTools = (
     {
       title: "List Images",
       description: "List Docker images in the current Docker context.",
+      outputSchema: { images: items },
       annotations: readOnly
     },
     async () => response(await docker.listImages())
@@ -130,6 +143,7 @@ export const registerDockerTools = (
     {
       title: "List Compose Projects",
       description: "List Docker Compose projects in the current Docker context.",
+      outputSchema: { projects: items },
       annotations: readOnly
     },
     async () => response(await docker.listComposeProjects())
@@ -142,6 +156,7 @@ export const registerDockerTools = (
       description:
         "List containers for a project configured in DOCKER_COMPOSE_PROJECTS.",
       inputSchema: schemas.composeServices.shape,
+      outputSchema: { project: str, services: items },
       annotations: readOnly
     },
     async ({ project, services }) =>
@@ -155,6 +170,7 @@ export const registerDockerTools = (
       description:
         "Read bounded logs for one configured Compose project or service.",
       inputSchema: schemas.composeLogs.shape,
+      outputSchema: { project: str, logs: str },
       annotations: readOnly
     },
     async ({ project, service, tail }) =>
@@ -174,6 +190,7 @@ export const registerDockerTools = (
       description:
         "Read one non-streaming resource usage snapshot for a configured Compose project or service.",
       inputSchema: schemas.composeStats.shape,
+      outputSchema: { project: str, stats: items },
       annotations: readOnly
     },
     async ({ project, service }) =>
@@ -187,6 +204,7 @@ export const registerDockerTools = (
       description:
         "Render configured Compose JSON without interpolating environment values or resolving env files.",
       inputSchema: schemas.composeProject.shape,
+      outputSchema: { project: str, config: z.unknown() },
       annotations: readOnly
     },
     async ({ project }) => response(await docker.getComposeConfig(project))
@@ -199,6 +217,13 @@ export const registerDockerTools = (
       description:
         "Resolve public bindings for one service private port in a configured Compose project.",
       inputSchema: schemas.composePort.shape,
+      outputSchema: {
+        project: str,
+        service: str,
+        privatePort: z.number(),
+        protocol: str,
+        publicPorts: items
+      },
       annotations: readOnly
     },
     async ({ project, service, private_port, protocol }) =>
@@ -219,6 +244,7 @@ export const registerDockerTools = (
       description:
         "Return the Compose process table for all or selected services in a configured project.",
       inputSchema: schemas.composeServices.shape,
+      outputSchema: { project: str, processes: z.unknown() },
       annotations: readOnly
     },
     async ({ project, services }) =>
@@ -232,6 +258,7 @@ export const registerDockerTools = (
       description:
         "List images used by all or selected services in a configured Compose project.",
       inputSchema: schemas.composeServices.shape,
+      outputSchema: { project: str, images: items },
       annotations: readOnly
     },
     async ({ project, services }) =>
@@ -245,6 +272,7 @@ export const registerDockerTools = (
       description:
         "Read a bounded historical event snapshot for a configured Compose project.",
       inputSchema: schemas.composeEvents.shape,
+      outputSchema: { project: str, events: items },
       annotations: readOnly
     },
     async ({ project, since_minutes }) =>
@@ -263,6 +291,7 @@ export const registerDockerTools = (
       description:
         "Read Docker healthcheck state for containers in a configured Compose project.",
       inputSchema: schemas.composeHealth.shape,
+      outputSchema: { project: str, containers: items, truncated: z.boolean() },
       annotations: readOnly
     },
     async ({ project, services }) =>
@@ -276,6 +305,7 @@ export const registerDockerTools = (
       description:
         "Read declared Compose service dependencies without resolving environment values.",
       inputSchema: schemas.composeDependencies.shape,
+      outputSchema: { project: str, services: items },
       annotations: readOnly
     },
     async ({ project, service }) =>
@@ -289,6 +319,7 @@ export const registerDockerTools = (
       description:
         "Read one non-streaming resource usage snapshot for all allowed or selected containers.",
       inputSchema: schemas.containerStats.shape,
+      outputSchema: { stats: items },
       annotations: readOnly
     },
     async ({ containers }) => response(await docker.getContainerStats(containers ?? []))
@@ -299,6 +330,7 @@ export const registerDockerTools = (
     {
       title: "List Networks",
       description: "List Docker networks, filtered by DOCKER_ALLOWED_NETWORKS when set.",
+      outputSchema: { networks: items },
       annotations: readOnly
     },
     async () => response(await docker.listNetworks())
@@ -310,6 +342,7 @@ export const registerDockerTools = (
       title: "Inspect Network",
       description: "Read detailed metadata for one allowed Docker network.",
       inputSchema: schemas.resource.shape,
+      outputSchema: { network: z.unknown() },
       annotations: readOnly
     },
     async ({ name }) => response(await docker.inspectNetwork(name))
@@ -320,6 +353,7 @@ export const registerDockerTools = (
     {
       title: "List Volumes",
       description: "List Docker volumes, filtered by DOCKER_ALLOWED_VOLUMES when set.",
+      outputSchema: { volumes: items },
       annotations: readOnly
     },
     async () => response(await docker.listVolumes())
@@ -331,6 +365,7 @@ export const registerDockerTools = (
       title: "Inspect Volume",
       description: "Read detailed metadata for one allowed Docker volume.",
       inputSchema: schemas.resource.shape,
+      outputSchema: { volume: z.unknown() },
       annotations: readOnly
     },
     async ({ name }) => response(await docker.inspectVolume(name))
@@ -343,6 +378,7 @@ export const registerDockerTools = (
       description:
         "Start one allowed container. Requires DOCKER_ENABLE_WRITE_TOOLS=true.",
       inputSchema: schemas.container.shape,
+      outputSchema: containerActionOutput,
       annotations: stateToggle
     },
     async ({ container }) => {
@@ -358,6 +394,7 @@ export const registerDockerTools = (
       description:
         "Restart one allowed container. Requires DOCKER_ENABLE_WRITE_TOOLS=true.",
       inputSchema: schemas.container.shape,
+      outputSchema: containerActionOutput,
       annotations: destructive
     },
     async ({ container }) => {
@@ -373,6 +410,7 @@ export const registerDockerTools = (
       description:
         "Run an argv command inside one allowed container. Requires DOCKER_ENABLE_WRITE_TOOLS=true.",
       inputSchema: schemas.exec.shape,
+      outputSchema: execOutput,
       annotations: destructive
     },
     async ({ container, command }) => {
@@ -388,6 +426,7 @@ export const registerDockerTools = (
       description:
         "Create and start a configured Compose project in detached mode. Requires DOCKER_ENABLE_WRITE_TOOLS=true.",
       inputSchema: schemas.composeServices.shape,
+      outputSchema: projectOutput,
       annotations: stateToggle
     },
     async ({ project, services }) => {
@@ -403,6 +442,7 @@ export const registerDockerTools = (
       description:
         "Stop and remove Compose containers and networks without deleting volumes or images. Requires DOCKER_ENABLE_WRITE_TOOLS=true.",
       inputSchema: schemas.composeDown.shape,
+      outputSchema: projectOutput,
       annotations: destructiveIdempotent
     },
     async ({ project, remove_orphans }) => {
@@ -420,6 +460,7 @@ export const registerDockerTools = (
       description:
         "Restart all or selected services in a configured Compose project. Requires DOCKER_ENABLE_WRITE_TOOLS=true.",
       inputSchema: schemas.composeServices.shape,
+      outputSchema: projectOutput,
       annotations: destructive
     },
     async ({ project, services }) => {
@@ -435,6 +476,7 @@ export const registerDockerTools = (
       description:
         "Run an argv command in a configured Compose service without a TTY. Requires DOCKER_ENABLE_WRITE_TOOLS=true.",
       inputSchema: schemas.composeExec.shape,
+      outputSchema: execOutput,
       annotations: destructive
     },
     async ({ project, service, command }) => {
@@ -450,6 +492,7 @@ export const registerDockerTools = (
       description:
         "Pull images for all or selected services in a configured Compose project. Requires DOCKER_ENABLE_WRITE_TOOLS=true.",
       inputSchema: schemas.composeServices.shape,
+      outputSchema: projectOutput,
       annotations: pullWrite
     },
     async ({ project, services }) => {
@@ -465,6 +508,7 @@ export const registerDockerTools = (
       description:
         "Build all or selected services in a configured Compose project. Requires DOCKER_ENABLE_WRITE_TOOLS=true.",
       inputSchema: schemas.composeServices.shape,
+      outputSchema: projectOutput,
       annotations: buildWrite
     },
     async ({ project, services }) => {
@@ -480,6 +524,7 @@ export const registerDockerTools = (
       description:
         "Set 0 to 100 replicas for selected services in a configured Compose project. Requires DOCKER_ENABLE_WRITE_TOOLS=true.",
       inputSchema: schemas.composeScale.shape,
+      outputSchema: projectOutput,
       annotations: destructiveIdempotent
     },
     async ({ project, replicas }) => {
@@ -495,6 +540,7 @@ export const registerDockerTools = (
       description:
         "Start all or selected existing Compose services. Requires DOCKER_ENABLE_WRITE_TOOLS=true.",
       inputSchema: schemas.composeServices.shape,
+      outputSchema: projectOutput,
       annotations: stateToggle
     },
     async ({ project, services }) => {
@@ -510,6 +556,7 @@ export const registerDockerTools = (
       description:
         "Stop all or selected Compose services without removing containers. Requires DOCKER_ENABLE_WRITE_TOOLS=true.",
       inputSchema: schemas.composeServices.shape,
+      outputSchema: projectOutput,
       annotations: stateToggle
     },
     async ({ project, services }) => {
@@ -525,6 +572,7 @@ export const registerDockerTools = (
       description:
         "Pause all or selected running Compose services. Requires DOCKER_ENABLE_WRITE_TOOLS=true.",
       inputSchema: schemas.composeServices.shape,
+      outputSchema: projectOutput,
       annotations: stateToggle
     },
     async ({ project, services }) => {
@@ -540,6 +588,7 @@ export const registerDockerTools = (
       description:
         "Unpause all or selected Compose services. Requires DOCKER_ENABLE_WRITE_TOOLS=true.",
       inputSchema: schemas.composeServices.shape,
+      outputSchema: projectOutput,
       annotations: stateToggle
     },
     async ({ project, services }) => {
