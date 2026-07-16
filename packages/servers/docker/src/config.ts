@@ -1,3 +1,5 @@
+import { parseBooleanFlag, parseCsv, parsePositiveInt } from "@mcp-hub/core";
+
 export type DockerConfig = {
   enableWriteTools: boolean;
   allowedContainers: string[] | undefined;
@@ -12,37 +14,6 @@ export type DockerConfig = {
   commandTimeoutMs: number;
 };
 
-const parsePositiveInteger = (
-  value: string | undefined,
-  fallback: number,
-  name: string
-) => {
-  if (value === undefined) {
-    return fallback;
-  }
-
-  if (!/^\d+$/.test(value)) {
-    throw new Error(`${name} must be a positive integer`);
-  }
-
-  const parsed = Number(value);
-  if (!Number.isSafeInteger(parsed) || parsed <= 0) {
-    throw new Error(`${name} must be a positive integer`);
-  }
-
-  return parsed;
-};
-
-const parseBoolean = (value: string | undefined, name: string) => {
-  if (value === undefined || value.trim() === "" || value === "false") {
-    return false;
-  }
-  if (value === "true") {
-    return true;
-  }
-  throw new Error(`${name} must be true or false`);
-};
-
 const parseAllowedResources = (
   value: string | undefined,
   name: string,
@@ -52,16 +23,12 @@ const parseAllowedResources = (
     return undefined;
   }
 
-  const containers = value
-    .split(",")
-    .map((container) => container.trim())
-    .filter(Boolean);
-
-  if (!containers.length) {
+  const items = parseCsv(value);
+  if (!items.length) {
     throw new Error(`${name} must include at least one ${resource}`);
   }
 
-  return containers;
+  return items;
 };
 
 const parseComposeProjects = (value: string | undefined) => {
@@ -93,12 +60,12 @@ const parseComposeProjects = (value: string | undefined) => {
 };
 
 export const loadDockerConfig = (env: NodeJS.ProcessEnv): DockerConfig => {
-  const maxEventLookbackMinutes = parsePositiveInteger(
+  const maxEventLookbackMinutes = parsePositiveInt(
     env.DOCKER_MAX_EVENT_LOOKBACK_MINUTES,
     60,
     "DOCKER_MAX_EVENT_LOOKBACK_MINUTES"
   );
-  const eventsLookbackMinutes = parsePositiveInteger(
+  const eventsLookbackMinutes = parsePositiveInt(
     env.DOCKER_EVENTS_LOOKBACK_MINUTES,
     15,
     "DOCKER_EVENTS_LOOKBACK_MINUTES"
@@ -110,7 +77,7 @@ export const loadDockerConfig = (env: NodeJS.ProcessEnv): DockerConfig => {
   }
 
   return {
-    enableWriteTools: parseBoolean(
+    enableWriteTools: parseBooleanFlag(
       env.DOCKER_ENABLE_WRITE_TOOLS,
       "DOCKER_ENABLE_WRITE_TOOLS"
     ),
@@ -130,24 +97,24 @@ export const loadDockerConfig = (env: NodeJS.ProcessEnv): DockerConfig => {
       "volume"
     ),
     composeProjects: parseComposeProjects(env.DOCKER_COMPOSE_PROJECTS),
-    maxComposeContainers: parsePositiveInteger(
+    maxComposeContainers: parsePositiveInt(
       env.DOCKER_MAX_COMPOSE_CONTAINERS,
       100,
       "DOCKER_MAX_COMPOSE_CONTAINERS"
     ),
     eventsLookbackMinutes,
     maxEventLookbackMinutes,
-    maxLogLines: parsePositiveInteger(
+    maxLogLines: parsePositiveInt(
       env.DOCKER_MAX_LOG_LINES,
       500,
       "DOCKER_MAX_LOG_LINES"
     ),
-    maxOutputBytes: parsePositiveInteger(
+    maxOutputBytes: parsePositiveInt(
       env.DOCKER_MAX_OUTPUT_BYTES,
       1_048_576,
       "DOCKER_MAX_OUTPUT_BYTES"
     ),
-    commandTimeoutMs: parsePositiveInteger(
+    commandTimeoutMs: parsePositiveInt(
       env.DOCKER_COMMAND_TIMEOUT_MS,
       10_000,
       "DOCKER_COMMAND_TIMEOUT_MS"

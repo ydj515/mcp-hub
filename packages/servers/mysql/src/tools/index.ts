@@ -1,3 +1,4 @@
+import { assertFeatureEnabled } from "@mcp-hub/core";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { MySqlConfig } from "../config.js";
 import type { MySqlDatabase } from "../services/database.js";
@@ -26,21 +27,17 @@ const validateSchema = (schema: string, config: MySqlConfig) => {
 
 const defaultSchema = (config: MySqlConfig) => config.allowedSchemas[0];
 
-const assertWriteToolsEnabled = (config: MySqlConfig) => {
-  if (!config.enableWriteTools) {
-    throw new Error(
-      "MySQL write tools are disabled. Set MYSQL_ENABLE_WRITE_TOOLS=true to enable run_write_query."
-    );
-  }
-};
+const assertWriteToolsEnabled = (config: MySqlConfig) =>
+  assertFeatureEnabled(
+    config.enableWriteTools,
+    "MySQL write tools are disabled. Set MYSQL_ENABLE_WRITE_TOOLS=true to enable run_write_query."
+  );
 
-const assertDiagnosticToolsEnabled = (config: MySqlConfig) => {
-  if (!config.enableDiagnosticTools) {
-    throw new Error(
-      "MySQL diagnostic tools are disabled. Set MYSQL_ENABLE_DIAGNOSTIC_TOOLS=true to enable list_active_queries and get_locks."
-    );
-  }
-};
+const assertDiagnosticToolsEnabled = (config: MySqlConfig) =>
+  assertFeatureEnabled(
+    config.enableDiagnosticTools,
+    "MySQL diagnostic tools are disabled. Set MYSQL_ENABLE_DIAGNOSTIC_TOOLS=true to enable list_active_queries and get_locks."
+  );
 
 const jsonText = (value: unknown) => JSON.stringify(value, null, 2);
 

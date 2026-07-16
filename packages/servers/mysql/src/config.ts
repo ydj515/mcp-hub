@@ -1,3 +1,5 @@
+import { parseBooleanFlag, parseCsv, parsePositiveInt } from "@mcp-hub/core";
+
 export type MySqlConfig = {
   mysqlUrl: string;
   allowedSchemas: string[];
@@ -8,24 +10,6 @@ export type MySqlConfig = {
   enableDiagnosticTools: boolean;
 };
 
-const parseBoolean = (value: string | undefined) =>
-  value?.toLowerCase() === "true";
-
-const parsePositiveInteger = (
-  value: string | undefined,
-  fallback: number,
-  name: string
-) => {
-  if (!value) {
-    return fallback;
-  }
-  const parsed = Number.parseInt(value, 10);
-  if (!Number.isInteger(parsed) || parsed <= 0) {
-    throw new Error(`${name} must be a positive integer`);
-  }
-  return parsed;
-};
-
 const defaultSchemaFromUrl = (mysqlUrl: string) => {
   const url = new URL(mysqlUrl);
   return decodeURIComponent(url.pathname.replace(/^\//, "")).trim();
@@ -33,10 +17,7 @@ const defaultSchemaFromUrl = (mysqlUrl: string) => {
 
 const parseAllowedSchemas = (env: NodeJS.ProcessEnv, mysqlUrl: string) => {
   const raw = env.MYSQL_ALLOWED_SCHEMAS ?? defaultSchemaFromUrl(mysqlUrl);
-  const allowedSchemas = raw
-    .split(",")
-    .map((schema) => schema.trim())
-    .filter(Boolean);
+  const allowedSchemas = parseCsv(raw);
 
   if (!allowedSchemas.length) {
     throw new Error("MYSQL_ALLOWED_SCHEMAS must include at least one schema");
@@ -53,18 +34,20 @@ export const loadMySqlConfig = (env: NodeJS.ProcessEnv): MySqlConfig => {
   return {
     mysqlUrl: env.MYSQL_URL,
     allowedSchemas: parseAllowedSchemas(env, env.MYSQL_URL),
-    maxRows: parsePositiveInteger(env.MYSQL_MAX_ROWS, 500, "MYSQL_MAX_ROWS"),
-    queryTimeoutMs: parsePositiveInteger(
+    maxRows: parsePositiveInt(env.MYSQL_MAX_ROWS, 500, "MYSQL_MAX_ROWS"),
+    queryTimeoutMs: parsePositiveInt(
       env.MYSQL_QUERY_TIMEOUT_MS,
       10000,
       "MYSQL_QUERY_TIMEOUT_MS"
     ),
-    poolLimit: parsePositiveInteger(
-      env.MYSQL_POOL_LIMIT,
-      5,
-      "MYSQL_POOL_LIMIT"
+    poolLimit: parsePositiveInt(env.MYSQL_POOL_LIMIT, 5, "MYSQL_POOL_LIMIT"),
+    enableWriteTools: parseBooleanFlag(
+      env.MYSQL_ENABLE_WRITE_TOOLS,
+      "MYSQL_ENABLE_WRITE_TOOLS"
     ),
-    enableWriteTools: parseBoolean(env.MYSQL_ENABLE_WRITE_TOOLS),
-    enableDiagnosticTools: parseBoolean(env.MYSQL_ENABLE_DIAGNOSTIC_TOOLS)
+    enableDiagnosticTools: parseBooleanFlag(
+      env.MYSQL_ENABLE_DIAGNOSTIC_TOOLS,
+      "MYSQL_ENABLE_DIAGNOSTIC_TOOLS"
+    )
   };
 };

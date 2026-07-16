@@ -1,3 +1,5 @@
+import { parseBooleanFlag, parseCsv, parsePositiveInt } from "@mcp-hub/core";
+
 export type RedisSharedConfig = {
   username?: string;
   password?: string;
@@ -31,47 +33,11 @@ export type RedisConfig =
   | RedisClusterConfig
   | RedisSentinelConfig;
 
-const parsePositiveInteger = (
-  value: string | undefined,
-  fallback: number,
-  name: string
-) => {
-  if (value === undefined) {
-    return fallback;
-  }
-
-  if (!/^\d+$/.test(value)) {
-    throw new Error(`${name} must be a positive integer`);
-  }
-
-  const parsed = Number(value);
-  if (!Number.isSafeInteger(parsed) || parsed <= 0) {
-    throw new Error(`${name} must be a positive integer`);
-  }
-
-  return parsed;
-};
-
-const parseBoolean = (value: string | undefined, name: string) => {
-  if (value === undefined || value === "false") {
-    return false;
-  }
-  if (value === "true") {
-    return true;
-  }
-  throw new Error(`${name} must be true or false`);
-};
-
-const parseCsv = (value: string | undefined, name: string) => {
-  const items = value
-    ?.split(",")
-    .map((item) => item.trim())
-    .filter(Boolean);
-
-  if (!items?.length) {
+const parseNodes = (value: string | undefined, name: string) => {
+  const items = parseCsv(value);
+  if (!items.length) {
     throw new Error(`${name} must include at least one node`);
   }
-
   return items;
 };
 
@@ -101,29 +67,25 @@ const parseSentinelNode = (value: string) => {
 const loadSharedConfig = (env: NodeJS.ProcessEnv): RedisSharedConfig => ({
   username: env.REDIS_USERNAME,
   password: env.REDIS_PASSWORD,
-  tls: parseBoolean(env.REDIS_TLS, "REDIS_TLS"),
-  maxResults: parsePositiveInteger(
-    env.REDIS_MAX_RESULTS,
-    100,
-    "REDIS_MAX_RESULTS"
-  ),
-  maxValueBytes: parsePositiveInteger(
+  tls: parseBooleanFlag(env.REDIS_TLS, "REDIS_TLS"),
+  maxResults: parsePositiveInt(env.REDIS_MAX_RESULTS, 100, "REDIS_MAX_RESULTS"),
+  maxValueBytes: parsePositiveInt(
     env.REDIS_MAX_VALUE_BYTES,
     1_048_576,
     "REDIS_MAX_VALUE_BYTES"
   ),
-  scanCount: parsePositiveInteger(env.REDIS_SCAN_COUNT, 100, "REDIS_SCAN_COUNT"),
-  slowlogCount: parsePositiveInteger(
+  scanCount: parsePositiveInt(env.REDIS_SCAN_COUNT, 100, "REDIS_SCAN_COUNT"),
+  slowlogCount: parsePositiveInt(
     env.REDIS_SLOWLOG_COUNT,
     100,
     "REDIS_SLOWLOG_COUNT"
   ),
-  connectTimeoutMs: parsePositiveInteger(
+  connectTimeoutMs: parsePositiveInt(
     env.REDIS_CONNECT_TIMEOUT_MS,
     10_000,
     "REDIS_CONNECT_TIMEOUT_MS"
   ),
-  commandTimeoutMs: parsePositiveInteger(
+  commandTimeoutMs: parsePositiveInt(
     env.REDIS_COMMAND_TIMEOUT_MS,
     10_000,
     "REDIS_COMMAND_TIMEOUT_MS"
@@ -144,7 +106,7 @@ export const loadRedisConfig = (env: NodeJS.ProcessEnv): RedisConfig => {
   if (mode === "cluster") {
     return {
       mode,
-      nodes: parseCsv(env.REDIS_CLUSTER_NODES, "REDIS_CLUSTER_NODES"),
+      nodes: parseNodes(env.REDIS_CLUSTER_NODES, "REDIS_CLUSTER_NODES"),
       ...shared
     };
   }
@@ -157,7 +119,7 @@ export const loadRedisConfig = (env: NodeJS.ProcessEnv): RedisConfig => {
     }
     return {
       mode,
-      nodes: parseCsv(env.REDIS_SENTINEL_NODES, "REDIS_SENTINEL_NODES").map(
+      nodes: parseNodes(env.REDIS_SENTINEL_NODES, "REDIS_SENTINEL_NODES").map(
         parseSentinelNode
       ),
       masterName: env.REDIS_SENTINEL_MASTER_NAME,

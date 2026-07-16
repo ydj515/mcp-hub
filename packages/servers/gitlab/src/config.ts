@@ -1,3 +1,5 @@
+import { parseBooleanFlag, parseBoundedInt, parsePositiveInt } from "@mcp-hub/core";
+
 export type GitLabAuthMode = "private-token" | "bearer";
 
 export type GitLabConfig = {
@@ -9,34 +11,6 @@ export type GitLabConfig = {
   maxPerPage: number;
   maxFileBytes: number;
   timeoutMs: number;
-};
-
-const parsePositiveInteger = (
-  value: string | undefined,
-  fallback: number,
-  name: string
-) => {
-  if (!value) {
-    return fallback;
-  }
-  const parsed = Number.parseInt(value, 10);
-  if (!Number.isInteger(parsed) || parsed <= 0) {
-    throw new Error(`${name} must be a positive integer`);
-  }
-  return parsed;
-};
-
-const parseBoundedInteger = (
-  value: string | undefined,
-  fallback: number,
-  name: string,
-  max: number
-) => {
-  const parsed = parsePositiveInteger(value, fallback, name);
-  if (parsed > max) {
-    throw new Error(`${name} must be less than or equal to ${max}`);
-  }
-  return parsed;
 };
 
 const normalizeGitLabUrl = (rawUrl: string) => {
@@ -63,8 +37,6 @@ const parseAuthMode = (value: string | undefined): GitLabAuthMode => {
   throw new Error("GITLAB_AUTH_MODE must be private-token or bearer");
 };
 
-const parseBoolean = (value: string | undefined) => value === "true";
-
 export const loadGitLabConfig = (env: NodeJS.ProcessEnv): GitLabConfig => {
   const token = env.GITLAB_TOKEN?.trim();
   if (!token) {
@@ -80,22 +52,21 @@ export const loadGitLabConfig = (env: NodeJS.ProcessEnv): GitLabConfig => {
     apiBaseUrl,
     token,
     authMode: parseAuthMode(env.GITLAB_AUTH_MODE),
-    enableWriteTools: parseBoolean(env.GITLAB_ENABLE_WRITE_TOOLS),
-    maxPerPage: parseBoundedInteger(
+    enableWriteTools: parseBooleanFlag(
+      env.GITLAB_ENABLE_WRITE_TOOLS,
+      "GITLAB_ENABLE_WRITE_TOOLS"
+    ),
+    maxPerPage: parseBoundedInt(
       env.GITLAB_MAX_PER_PAGE,
       50,
       "GITLAB_MAX_PER_PAGE",
       100
     ),
-    maxFileBytes: parsePositiveInteger(
+    maxFileBytes: parsePositiveInt(
       env.GITLAB_MAX_FILE_BYTES,
       1048576,
       "GITLAB_MAX_FILE_BYTES"
     ),
-    timeoutMs: parsePositiveInteger(
-      env.GITLAB_TIMEOUT_MS,
-      10000,
-      "GITLAB_TIMEOUT_MS"
-    )
+    timeoutMs: parsePositiveInt(env.GITLAB_TIMEOUT_MS, 10000, "GITLAB_TIMEOUT_MS")
   };
 };

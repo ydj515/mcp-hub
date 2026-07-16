@@ -7,7 +7,7 @@ export const postgresServer: ServerDefinition = {
   id: "postgres",
   displayName: "PostgreSQL MCP",
   version: "0.1.0",
-  requiredEnv: ["POSTGRESQL_URL"],
+  requiredEnv: ["POSTGRES_URL"],
   registerTools: (server, context) => {
     const config = loadPostgresConfig(context.env);
     const db = createPostgresDatabase(config);

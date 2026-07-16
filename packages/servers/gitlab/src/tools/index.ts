@@ -1,3 +1,4 @@
+import { assertFeatureEnabled } from "@mcp-hub/core";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { GitLabConfig } from "../config.js";
 import type { GitLabClient } from "../services/gitlab.js";
@@ -92,13 +93,11 @@ const prepareFilePayload = (
   return prepared;
 };
 
-const assertWriteEnabled = (config: GitLabConfig) => {
-  if (!config.enableWriteTools) {
-    throw new Error(
-      "GitLab write tools are disabled. Set GITLAB_ENABLE_WRITE_TOOLS=true to enable create/comment/approve/merge tools."
-    );
-  }
-};
+const assertWriteEnabled = (config: GitLabConfig) =>
+  assertFeatureEnabled(
+    config.enableWriteTools,
+    "GitLab write tools are disabled. Set GITLAB_ENABLE_WRITE_TOOLS=true to enable create/comment/approve/merge tools."
+  );
 
 export const registerGitLabTools = (
   server: McpServer,

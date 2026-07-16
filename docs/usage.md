@@ -144,11 +144,11 @@ PUBLIC_DATA_API_KEY=...
 `postgres`는 데이터베이스 연결 정보가 필요합니다.
 
 ```text
-POSTGRESQL_URL=postgresql://readonly:password@localhost:5432/app
-ALLOWED_SCHEMAS=public
-MAX_ROWS=500
-QUERY_TIMEOUT_MS=10000
-PG_POOL_MAX=5
+POSTGRES_URL=postgresql://readonly:password@localhost:5432/app
+POSTGRES_ALLOWED_SCHEMAS=public
+POSTGRES_MAX_ROWS=500
+POSTGRES_QUERY_TIMEOUT_MS=10000
+POSTGRES_POOL_MAX=5
 POSTGRES_ENABLE_WRITE_TOOLS=false
 POSTGRES_ENABLE_DIAGNOSTIC_TOOLS=false
 ```
@@ -351,7 +351,7 @@ merge_merge_request
 ```
 
 > `postgres` 서버는 기본적으로 읽기 전용입니다. 개발·로컬 DB에서만 `POSTGRES_ENABLE_WRITE_TOOLS=true`로 `run_write_query`를 활성화하세요. 이 도구는 한 SQL statement로 DML, index, partition, 통계·maintenance 명령을 실행하지만 `DROP TABLE`, `TRUNCATE`, database/schema 제거, 권한·역할 변경은 거부합니다.
-> `ALLOWED_SCHEMAS`를 지정하면 노출할 schema 범위를 줄일 수 있습니다.
+> `POSTGRES_ALLOWED_SCHEMAS`를 지정하면 노출할 schema 범위를 줄일 수 있습니다.
 > PostgreSQL의 `list_active_queries`, `get_locks`, `get_index_usage`는 각각 `pg_stat_activity`, `pg_locks`, `pg_stat_user_indexes` 접근 권한과 통계 수집 상태에 따라 보이는 범위가 달라집니다. 활성 쿼리와 잠금 응답에는 SQL 텍스트와 사용자·세션 정보가 포함될 수 있습니다.
 > PostgreSQL의 `list_active_queries`, `get_locks`는 `POSTGRES_ENABLE_DIAGNOSTIC_TOOLS=true`일 때만 실행됩니다. `get_locks`는 allowlist 경계를 유지하기 위해 relation lock만 반환합니다.
 > `mysql` 서버도 기본적으로 읽기 전용입니다. 개발·로컬 DB에서만 `MYSQL_ENABLE_WRITE_TOOLS=true`로 `run_write_query`를 활성화하세요. 이 도구는 한 SQL statement로 DML, index, partition, 통계·maintenance 명령을 실행하지만 `DROP TABLE`, `TRUNCATE`, database/schema 제거, 권한·역할 변경은 거부합니다.

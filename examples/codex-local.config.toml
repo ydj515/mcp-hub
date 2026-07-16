@@ -22,7 +22,7 @@ tool_timeout_sec = 60
 [mcp_servers.mcp_hub_postgres]
 command = "node"
 args = ["<mcp-hub-repo>/packages/cli/dist/index.js", "stdio", "postgres"]
-env_vars = ["POSTGRESQL_URL"]
+env_vars = ["POSTGRES_URL"]
 startup_timeout_sec = 20
 tool_timeout_sec = 60
 
