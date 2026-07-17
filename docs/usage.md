@@ -368,6 +368,22 @@ merge_merge_request
 > Docker daemon 접근 권한은 호스트에서 사실상 높은 권한이 될 수 있습니다. remote HTTP endpoint는 Docker socket이 연결된 호스트에 직접 노출하지 말고, 최소 권한 Docker context·네트워크 접근 제어·별도 인증을 함께 사용하세요.
 > `gitlab` 서버의 create/comment/approve/merge tool은 `GITLAB_ENABLE_WRITE_TOOLS=true`일 때만 실행됩니다. self-hosted instance가 relative URL 아래에 있으면 `GITLAB_URL=https://example.com/gitlab`처럼 지정하세요.
 
+## MCP Prompts
+
+각 서버는 기존 read tool을 순서대로 활용하도록 안내하는 대표 prompt를 제공합니다. prompt는 데이터를 바꾸지 않고, 어떤 tool을 어떤 순서로 호출할지 안내하는 user 메시지를 생성합니다. Claude Desktop처럼 prompt를 지원하는 MCP 클라이언트에서 노출됩니다.
+
+| 서버 | prompt | 인자 | 설명 |
+| --- | --- | --- | --- |
+| `postgres` | `diagnose_table` | `table_name`, `schema`(선택) | 테이블 구조·인덱스·제약·크기·통계를 조회해 건강도를 진단 |
+| `mysql` | `diagnose_table` | `table_name`, `schema`(선택) | 테이블 구조·인덱스·파티션·크기·통계를 조회해 건강도를 진단 |
+| `redis` | `diagnose_instance` | (없음) | INFO·database size·slowlog·topology로 인스턴스 상태를 진단 |
+| `docker` | `diagnose_compose` | `project` | Compose 프로젝트의 health·events·logs를 점검 |
+| `gitlab` | `prepare_mr_review` | `project_id`, `merge_request_iid` | MR·commit·pipeline job을 조회해 리뷰를 준비 |
+| `api-finder` | `find_public_api` | `keywords` | 공공데이터 API 검색과 명세를 확인 |
+| `shortcuts` | `find_shortcut` | `query`, `platform`(선택) | 카테고리와 검색으로 단축키를 탐색 |
+
+prompt는 tool 이름을 안내 문구에 포함할 뿐 실제 조회·실행은 해당 서버의 tool이 수행하며, write tool을 트리거하는 prompt는 없습니다.
+
 ## 배포 후 사용 흐름
 
 목표 배포 형태는 다음과 같습니다.
