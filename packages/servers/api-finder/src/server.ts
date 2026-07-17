@@ -1,4 +1,5 @@
 import type { ServerDefinition } from "@mcp-hub/core";
+import { registerApiFinderPrompts } from "./prompts.js";
 import { registerApiFinderTools } from "./tools/index.js";
 
 export const apiFinderServer: ServerDefinition = {
@@ -8,5 +9,6 @@ export const apiFinderServer: ServerDefinition = {
   requiredEnv: ["PUBLIC_DATA_API_KEY"],
   registerTools: (server, context) => {
     registerApiFinderTools(server, context.env);
+    registerApiFinderPrompts(server);
   }
 };

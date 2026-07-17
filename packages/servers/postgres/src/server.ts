@@ -1,5 +1,6 @@
 import type { ServerDefinition } from "@mcp-hub/core";
 import { loadPostgresConfig } from "./config.js";
+import { registerPostgresPrompts } from "./prompts.js";
 import { createPostgresDatabase } from "./services/database.js";
 import { registerPostgresTools } from "./tools/index.js";
 
@@ -13,5 +14,6 @@ export const postgresServer: ServerDefinition = {
     const db = createPostgresDatabase(config);
     context.onClose(() => db.close());
     registerPostgresTools(server, db, config);
+    registerPostgresPrompts(server);
   }
 };

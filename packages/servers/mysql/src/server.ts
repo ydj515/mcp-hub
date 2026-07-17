@@ -1,5 +1,6 @@
 import type { ServerDefinition } from "@mcp-hub/core";
 import { loadMySqlConfig } from "./config.js";
+import { registerMySqlPrompts } from "./prompts.js";
 import { createMySqlDatabase } from "./services/database.js";
 import { registerMySqlTools } from "./tools/index.js";
 
@@ -13,5 +14,6 @@ export const mysqlServer: ServerDefinition = {
     const db = createMySqlDatabase(config);
     context.onClose(() => db.close());
     registerMySqlTools(server, db, config);
+    registerMySqlPrompts(server);
   }
 };

@@ -1,5 +1,6 @@
 import type { ServerDefinition } from "@mcp-hub/core";
 import { loadRedisConfig } from "./config.js";
+import { registerRedisPrompts } from "./prompts.js";
 import {
   createNodeRedisConnection,
   createRedisReadService
@@ -16,5 +17,6 @@ export const redisServer: ServerDefinition = {
     context.onClose(() => redis.close());
     await redis.ready;
     registerRedisTools(server, redis, config);
+    registerRedisPrompts(server);
   }
 };
