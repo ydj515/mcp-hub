@@ -6,7 +6,7 @@ const postgresServer: ServerDefinition = {
   id: "postgres",
   displayName: "PostgreSQL MCP",
   version: "0.1.0",
-  requiredEnv: ["POSTGRESQL_URL"],
+  requiredEnv: ["POSTGRES_URL"],
   registerTools: () => {}
 };
 
@@ -25,6 +25,8 @@ describe("buildInitPreview", () => {
     expect(result.content).toContain('command = "npx"');
     expect(result.content).toContain('"stdio"');
     expect(result.content).toContain('"postgres"');
+    expect(result.content).toContain("[mcp_servers.mcp_hub_postgres.env]");
+    expect(result.content).toContain('POSTGRES_URL = "<POSTGRES_URL>"');
   });
 
   it("builds Cursor project JSON preview", () => {

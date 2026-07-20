@@ -26,4 +26,6 @@
 
 local 예시를 실제로 사용할 때는 `<mcp-hub-repo>`를 로컬 MCP Hub 경로로 바꾸세요.
 
+Codex의 `codex-all.config.toml`, `codex-local.config.toml`은 각 MCP 서버의 `env` 테이블에 placeholder를 둡니다. `<POSTGRES_URL>`, `<GITLAB_TOKEN>`, `<compose-project-dir>` 같은 값을 실제 환경에 맞게 교체하고, 비밀번호·토큰이 포함된 개인 설정 파일은 커밋하지 마세요.
+
 remote 예시를 실제로 사용할 때는 `https://mcp.example.com`을 실제 remote MCP server domain으로 바꾸고, 클라이언트 환경에 `MCP_HUB_TOKEN`을 설정하세요.

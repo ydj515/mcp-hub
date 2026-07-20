@@ -1,48 +1,76 @@
 [mcp_servers.mcp_hub_api_finder]
 command = "npx"
 args = ["-y", "mcp-hub", "stdio", "api-finder"]
-env_vars = ["PUBLIC_DATA_API_KEY"]
 startup_timeout_sec = 20
 tool_timeout_sec = 60
+
+[mcp_servers.mcp_hub_api_finder.env]
+PUBLIC_DATA_API_KEY = "<PUBLIC_DATA_API_KEY>"
 
 [mcp_servers.mcp_hub_shortcuts]
 command = "npx"
 args = ["-y", "mcp-hub", "stdio", "shortcuts"]
-env_vars = []
 startup_timeout_sec = 20
 tool_timeout_sec = 60
 
 [mcp_servers.mcp_hub_mysql]
 command = "npx"
 args = ["-y", "mcp-hub", "stdio", "mysql"]
-env_vars = ["MYSQL_URL"]
 startup_timeout_sec = 20
 tool_timeout_sec = 60
+
+[mcp_servers.mcp_hub_mysql.env]
+MYSQL_URL = "mysql://readonly:password@localhost:3306/app"
+MYSQL_ALLOWED_SCHEMAS = "app,reporting"
+MYSQL_ENABLE_WRITE_TOOLS = "false"
+MYSQL_ENABLE_DIAGNOSTIC_TOOLS = "false"
 
 [mcp_servers.mcp_hub_postgres]
 command = "npx"
 args = ["-y", "mcp-hub", "stdio", "postgres"]
-env_vars = ["POSTGRES_URL"]
 startup_timeout_sec = 20
 tool_timeout_sec = 60
+
+[mcp_servers.mcp_hub_postgres.env]
+POSTGRES_URL = "postgresql://readonly:password@localhost:5432/app"
+POSTGRES_ALLOWED_SCHEMAS = "public,app"
+POSTGRES_ENABLE_WRITE_TOOLS = "false"
+POSTGRES_ENABLE_DIAGNOSTIC_TOOLS = "false"
 
 [mcp_servers.mcp_hub_redis]
 command = "npx"
 args = ["-y", "mcp-hub", "stdio", "redis"]
-env_vars = ["REDIS_URL"]
 startup_timeout_sec = 20
 tool_timeout_sec = 60
+
+[mcp_servers.mcp_hub_redis.env]
+REDIS_MODE = "standalone"
+REDIS_URL = "redis://readonly:password@localhost:6379/0"
+# Cluster: REDIS_MODE = "cluster", REDIS_CLUSTER_NODES = "redis://redis-a:6379,redis://redis-b:6379"
+# Sentinel: REDIS_MODE = "sentinel", REDIS_SENTINEL_NODES = "sentinel-a:26379,sentinel-b:26379"
+# Sentinel: REDIS_SENTINEL_MASTER_NAME = "mymaster"
 
 [mcp_servers.mcp_hub_docker]
 command = "npx"
 args = ["-y", "mcp-hub", "stdio", "docker"]
-env_vars = ["DOCKER_ENABLE_WRITE_TOOLS", "DOCKER_ALLOWED_CONTAINERS", "DOCKER_ALLOWED_NETWORKS", "DOCKER_ALLOWED_VOLUMES", "DOCKER_COMPOSE_PROJECTS"]
 startup_timeout_sec = 20
 tool_timeout_sec = 60
+
+[mcp_servers.mcp_hub_docker.env]
+DOCKER_ENABLE_WRITE_TOOLS = "false"
+DOCKER_ALLOWED_CONTAINERS = "api,worker"
+DOCKER_ALLOWED_NETWORKS = "app-net,observability-net"
+DOCKER_ALLOWED_VOLUMES = "app-data,worker-data"
+DOCKER_COMPOSE_PROJECTS = "{\"app\":\"<compose-project-dir>/app\",\"worker\":\"<compose-project-dir>/worker\"}"
 
 [mcp_servers.mcp_hub_gitlab]
 command = "npx"
 args = ["-y", "mcp-hub", "stdio", "gitlab"]
-env_vars = ["GITLAB_TOKEN", "GITLAB_URL", "GITLAB_ENABLE_WRITE_TOOLS"]
 startup_timeout_sec = 20
 tool_timeout_sec = 60
+
+[mcp_servers.mcp_hub_gitlab.env]
+GITLAB_TOKEN = "<GITLAB_TOKEN>"
+GITLAB_URL = "https://gitlab.example.com"
+GITLAB_AUTH_MODE = "private-token"
+GITLAB_ENABLE_WRITE_TOOLS = "false"

@@ -85,6 +85,8 @@ MCP_HUB_TOKEN
 
 `shortcuts`는 별도 환경 변수가 필요 없습니다.
 
+Codex local·npx 예시는 `env_vars` 대신 `[mcp_servers.<name>.env]` 테이블에 placeholder를 둡니다. 이 방식은 Codex가 MCP stdio 프로세스를 시작할 때 직접 환경 변수를 전달합니다. 실제 URL·토큰은 개인 설정 파일에서만 교체하고 프로젝트 설정이나 Git에는 저장하지 마세요.
+
 ## 참고
 
 - Codex는 사용자 설정 `~/.codex/config.toml`과 프로젝트 설정 `<repo>/.codex/config.toml`을 모두 사용할 수 있습니다.
