@@ -27,11 +27,7 @@
 <mcp-hub-repo>/packages/cli/dist/index.js
 ```
 
-이 로컬 머신에서는 다음처럼 바꾸면 됩니다.
-
-```text
-/Users/dongjin/dev/study/mcp-hub/packages/cli/dist/index.js
-```
+`<mcp-hub-repo>`는 실제 MCP Hub clone 경로로 바꾸세요.
 
 ## 파일 위치
 

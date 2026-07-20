@@ -54,7 +54,7 @@ node packages/cli/dist/index.js stdio gitlab
 {
   "command": "node",
   "args": [
-    "/Users/dongjin/dev/study/mcp-hub/packages/cli/dist/index.js",
+    "<mcp-hub-repo>/packages/cli/dist/index.js",
     "stdio",
     "shortcuts"
   ]
@@ -256,7 +256,7 @@ DOCKER_ENABLE_WRITE_TOOLS=false
 DOCKER_ALLOWED_CONTAINERS=api,worker
 DOCKER_ALLOWED_NETWORKS=app-net
 DOCKER_ALLOWED_VOLUMES=app-data
-DOCKER_COMPOSE_PROJECTS={"app":"/Users/example/dev/app","worker":"/Users/example/dev/worker"}
+DOCKER_COMPOSE_PROJECTS={"app":"<compose-project-dir>/app","worker":"<compose-project-dir>/worker"}
 DOCKER_MAX_COMPOSE_CONTAINERS=100
 DOCKER_EVENTS_LOOKBACK_MINUTES=15
 DOCKER_MAX_EVENT_LOOKBACK_MINUTES=60
@@ -305,7 +305,7 @@ pause_compose_services
 unpause_compose_services
 ```
 
-`DOCKER_ALLOWED_CONTAINERS`는 선택 사항이며 설정하면 `inspect_container`, `get_container_logs`, `get_container_stats` 및 쓰기·실행 tool의 대상 컨테이너를 정확한 이름 또는 ID로 제한합니다. `DOCKER_ALLOWED_NETWORKS`와 `DOCKER_ALLOWED_VOLUMES`는 각각 network·volume 목록을 필터링하고 상세 조회 대상을 정확한 이름으로 제한합니다. `DOCKER_COMPOSE_PROJECTS`는 JSON object 형식의 `프로젝트명: Compose 디렉터리` mapping이며, Compose tool은 여기에 등록된 프로젝트에서만 실행됩니다. 예를 들어 `{"app":"/Users/example/dev/app"}`을 설정하면 `project: "app"` 요청은 해당 디렉터리의 Compose 설정을 사용합니다.
+`DOCKER_ALLOWED_CONTAINERS`는 선택 사항이며 설정하면 `inspect_container`, `get_container_logs`, `get_container_stats` 및 쓰기·실행 tool의 대상 컨테이너를 정확한 이름 또는 ID로 제한합니다. `DOCKER_ALLOWED_NETWORKS`와 `DOCKER_ALLOWED_VOLUMES`는 각각 network·volume 목록을 필터링하고 상세 조회 대상을 정확한 이름으로 제한합니다. `DOCKER_COMPOSE_PROJECTS`는 JSON object 형식의 `프로젝트명: Compose 디렉터리` mapping이며, Compose tool은 여기에 등록된 프로젝트에서만 실행됩니다. 예를 들어 `{"app":"<compose-project-dir>/app"}`을 설정하면 `project: "app"` 요청은 해당 디렉터리의 Compose 설정을 사용합니다.
 
 `get_compose_events`는 `DOCKER_EVENTS_LOOKBACK_MINUTES` 기본값(15분) 또는 요청한 `since_minutes`의 최근 이벤트만 반환하며, 어느 경우든 `DOCKER_MAX_EVENT_LOOKBACK_MINUTES`(기본 60분)를 넘지 않습니다. Compose event stream을 열어 두지 않도록 종료 시각을 함께 전달합니다. `get_compose_health_status`는 `docker compose ps` 결과의 각 컨테이너 healthcheck 상태를 반환하고 `DOCKER_MAX_COMPOSE_CONTAINERS`(기본 100)까지 처리한 뒤 초과 여부를 `truncated`로 표시합니다. `get_compose_service_dependencies`와 `get_compose_config`는 환경 변수 보간과 service `env_file` 해석 없이 JSON config를 읽습니다.
 

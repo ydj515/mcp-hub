@@ -7,7 +7,7 @@
 remote로 노출할 서버에서 빌드 후 토큰과 서버별 환경 변수를 설정합니다.
 
 ```bash
-cd /Users/dongjin/dev/study/mcp-hub
+cd <mcp-hub-repo>
 
 mise install
 npm install

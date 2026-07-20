@@ -26,8 +26,4 @@
 
 local 예시를 실제로 사용할 때는 `<mcp-hub-repo>`를 로컬 MCP Hub 경로로 바꾸세요.
 
-```text
-/Users/dongjin/dev/study/mcp-hub
-```
-
 remote 예시를 실제로 사용할 때는 `https://mcp.example.com`을 실제 remote MCP server domain으로 바꾸고, 클라이언트 환경에 `MCP_HUB_TOKEN`을 설정하세요.
